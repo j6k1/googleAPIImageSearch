@@ -6,7 +6,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
 
+import javax.imageio.IIOException;
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -15,7 +17,8 @@ import javax.imageio.stream.FileImageOutputStream;
 
 public class ResizedImageWriter {
 
-	public static Optional<Pair<Integer, Integer>> writeImage(byte[] data, String mimetype, int w, int h, boolean fixedSize, File path, ILogger logger)
+	public static Optional<Pair<Integer, Integer>> writeImage(byte[] data, String mimetype, int w, int h, boolean fixedSize, File path,
+																ILogger logger, BooleanSupplier canselStateReader) throws IOException
 	{
 		ImageReader reader = null;
 		ImageWriter writer = null;
@@ -39,6 +42,14 @@ public class ResizedImageWriter {
 
 				while(true)
 				{
+					if(canselStateReader.getAsBoolean())
+					{
+						if(path.isFile()) path.delete();
+						reader.dispose();
+						writer.dispose();
+						return Optional.empty();
+					}
+
 					BufferedImage sourceImage = reader.read(i);
 
 					if(sourceImage.getHeight() <= h && sourceImage.getWidth() <= w)
@@ -84,9 +95,16 @@ public class ResizedImageWriter {
 			}
 			writer.endWriteSequence();
 			return Optional.of(new Pair<Integer, Integer>(dw, dh));
+		} catch (UnsupportedOperationException e) {
+			if(path.isFile()) path.delete();
+			return Optional.empty();
+		} catch (IIOException e) {
+			if(path.isFile()) path.delete();
+			return Optional.empty();
 		} catch (IOException e) {
 			logger.write(e);
-			return Optional.empty();
+			if(path.isFile()) path.delete();
+			throw e;
 		} finally {
 			if(reader != null) reader.dispose();
 			if(writer != null) writer.dispose();

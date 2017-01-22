@@ -121,6 +121,9 @@ public class GoogleAPIImageSearchForm extends JFrame {
 			System.out.println(e.getMessage());
 		}
 
+		ISettings settings = new GoogleAPIImageSearchSettings(new File("settings.json"));
+		settings.validate();
+
 		this.loggingExecutor = loggingExecutor;
 
 		setBounds(new Rectangle(100, 100, 800, 600));
@@ -155,18 +158,27 @@ public class GoogleAPIImageSearchForm extends JFrame {
 		JScrollPane imageScrollPanel = new JScrollPane();
 		JPanel imagePanel = new JPanel();
 		imagePanel.setLayout(new GridLayout(3, 5, 3, 3));
-		imageScrollPanel.setPreferredSize(new Dimension(780, 468));
-		imageScrollPanel.setViewportView(imagePanel);
+		JPanel imageOuterPanel = new JPanel();
+		((FlowLayout)imageOuterPanel.getLayout()).setAlignment(FlowLayout.LEFT);
+		imageOuterPanel.add(imagePanel);
+		imageScrollPanel.setPreferredSize(new Dimension(768, 498));
+		imageScrollPanel.setViewportView(imageOuterPanel);
 
-		IEnvironment environment = new GoogleAPIImageSearchEnvironment();
+		IEnvironment environment = new GoogleAPIImageSearchEnvironment(settings);
+
+		RunnerApplicative onSearchRequestCompleted = new RunnerApplicative();
+		RunnerApplicative onSearchRequestCancelled = new RunnerApplicative();
 
 		downloader = new HttpDownloadService(() -> {
-
-		}, (File originaImagelPath, File resizedImagePath, File thumbnailPath, int w, int h) -> {
+			onSearchRequestCancelled.run();
+		}, () -> {
+			onSearchRequestCancelled.run();
+		},
+			(File originaImagelPath, File resizedImagePath, File thumbnailPath, int w, int h) -> {
 
 			JLabel img = new JLabel(new ImageIcon(thumbnailPath.getAbsolutePath()));
 			img.setBackground(Color.BLACK);
-			img.setPreferredSize(new Dimension(150, 150));
+			img.setPreferredSize(new Dimension(ThumbnailSize.width, ThumbnailSize.height));
 			imagePanel.add(img);
 			img.addMouseListener(new MouseListener() {
 
@@ -200,34 +212,44 @@ public class GoogleAPIImageSearchForm extends JFrame {
 					imageWindow.displayImage(resizedImagePath, w, h);
 				}
 			});
+
+			this.revalidate();
 		}, s -> {
 			EventQueue.invokeLater(() -> {
 				logWindow.setText(s);
 			});
-		}, logger, environment,
-					new GoogleAPIImageSearchSettings(new File("settings.json")));
+		}, logger, environment, settings);
 
 		apiRequester = new MockGoogleAPIRequester(new File(String.join(File.separator, new String[] { "mockdata", "googleapi.json" })));
 
 		shutDownInvoker = Optional.of(() -> {
 			apiRequester.cancel();
-			downloader.cancel();
-			loggingWorker.shutdown();
+			downloader.cansel();
 		});
 
-		JButton button = new JButton("検索");
-		button.addMouseListener(new MouseAdapter() {
+		JButton searchButton = new JButton("検索");
+		searchButton.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				try {
+					searchButton.setEnabled(false);
 					apiRequester.request(downloader);
 					EventQueue.invokeLater(()-> {
-						button.setText("次を検索");
+						searchButton.setText("次を検索");
 					});
 				} catch (Exception ex) {
 					logger.write(ex);
 				}
 			}
+		});
+
+		onSearchRequestCompleted.setImplements(() -> {
+			searchButton.setEnabled(true);
+			loggingWorker.shutdown();
+		});
+
+		onSearchRequestCancelled.setImplements(() -> {
+			searchButton.setEnabled(true);
 		});
 
 		this.addWindowListener(new WindowAdapter() {
@@ -237,8 +259,8 @@ public class GoogleAPIImageSearchForm extends JFrame {
 			}
 		});
 
-		headerPanel.add(button);
-		button.setPreferredSize(new Dimension(100, 24));
+		headerPanel.add(searchButton);
+		searchButton.setPreferredSize(new Dimension(100, 24));
 
 		JButton canselButton = new JButton("検索を中止");
 
@@ -247,7 +269,7 @@ public class GoogleAPIImageSearchForm extends JFrame {
 			public void mouseClicked(MouseEvent e) {
 				try {
 					apiRequester.cancel();
-					downloader.cancel();
+					downloader.cansel();
 				} catch (Exception ex) {
 					logger.write(ex);
 				}

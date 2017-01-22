@@ -1,10 +1,10 @@
 package net.will_co21.application.googleAPIImageSearch;
 
 public class HttpDownloadCounter implements IDownloadCounter {
-	protected int count;
-	protected Runnable onCompleted;
+	protected volatile int count;
+	protected IOnSearchRequestCompleted onCompleted;
 
-	public HttpDownloadCounter(Runnable onCompleted)
+	public HttpDownloadCounter(IOnSearchRequestCompleted onCompleted)
 	{
 		this.count = 0;
 		this.onCompleted = onCompleted;
@@ -18,7 +18,7 @@ public class HttpDownloadCounter implements IDownloadCounter {
 	@Override
 	public synchronized int countDown() {
 		this.count--;
-		if(this.count == 0) onCompleted.run();
+		if(this.count == 0) onCompleted.onSearchRequestCompleted();
 		return this.count;
 	}
 

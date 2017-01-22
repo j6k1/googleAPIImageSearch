@@ -7,9 +7,16 @@ import java.util.zip.CRC32;
 public class GoogleAPIImageSearchEnvironment implements IEnvironment {
 	protected boolean safeModeEnable = false;
 	protected SearchMode searchMode = SearchMode.apiSearch;
+	protected ISettings settings;
+
+	public GoogleAPIImageSearchEnvironment(ISettings settings)
+	{
+		this.settings = settings;
+	}
+
 	@Override
 	public File getImagePath(String path, String filename) throws UnsupportedEncodingException {
-		File imagePath = new File(String.join(File.separator, new String[] {"data", "images", path, filename}));
+		File imagePath = new File(String.join(File.separator, new String[] { settings.getImageDataRootDir(), "data", "images", path, filename}));
 
 		if(imagePath.getAbsolutePath().getBytes("Shift_JIS").length > 256)
 		{

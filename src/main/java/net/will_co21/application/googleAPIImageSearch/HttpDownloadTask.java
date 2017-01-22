@@ -13,6 +13,7 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
@@ -23,6 +24,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -82,10 +84,12 @@ public class HttpDownloadTask implements IDownloadTask {
 	protected IEnvironment environment;
 	protected ISettings settings;
 	protected volatile boolean cancelled;
+	protected Consumer<HttpDownloadTask> downloadDelegatee;
 
-	public HttpDownloadTask(IDownloadService downloader, int depth,
+	public HttpDownloadTask(Consumer<HttpDownloadTask> downloadDelegatee, IDownloadService downloader, int depth,
 			String url, IImageReader imageReader, ISwingLogPrinter logPrinter, ILogger logger, IEnvironment environment, ISettings settings)
 	{
+		this.downloadDelegatee = downloadDelegatee;
 		this.downloader = downloader;
 		this.depth = depth;
 		this.url = url;
@@ -101,6 +105,7 @@ public class HttpDownloadTask implements IDownloadTask {
 		setUpOnReadyImagesListener();
 	}
 
+	@Override
 	public void cansel()
 	{
 		this.cancelled = true;
@@ -121,44 +126,18 @@ public class HttpDownloadTask implements IDownloadTask {
 	}
 
 	@Override
+	public boolean isCancelled()
+	{
+		return this.cancelled;
+	}
+
+	@Override
 	public void run() {
-		this.connection = null;
-
 		try {
-			URL url = new URL(this.url);
-
-			if(url.getProtocol().equals("https"))
-			{
-				SSLContext sslContext = SSLContext.getInstance("SSL");
-				sslContext.init(null, new X509TrustManager[] {
-					new LooseTrustManager()
-				}, new SecureRandom());
-				this.connection = (HttpURLConnection)url.openConnection();
-				((HttpsURLConnection)this.connection).setSSLSocketFactory(sslContext.getSocketFactory());
-			}
-			else
-			{
-				this.connection = (HttpURLConnection)url.openConnection();
-			}
-
-			this.connection.setRequestMethod("GET");
-			this.connection.connect();
-			int status = this.connection.getResponseCode();
-			try {
-				if(status >= 200 && status < 300) onSuccess(this.connection, this.url,
-														this.imageReader, this.logPrinter, this.logger, this.environment, this.settings);
-				else onError(this.connection, this.url, this.logPrinter, this.logger, this.environment, this.settings);
-			} catch (Exception e) {
-				logger.write(e);
-			}
+			downloadDelegatee.accept(this);
 		} catch (Exception e) {
-			this.logger.write(String.format("通信時に例外発生: url = %s, 例外クラス名 = %s, message = %s",
-								this.url, e.getClass().getName(), (e.getMessage() == null ? "null" : e.getMessage())));
-		} catch (Error e) {
-			this.logger.write(e);
-			throw e;
+			logger.write(e);
 		}
-
 		downloader.getCounter().countDown();
 	}
 
@@ -215,11 +194,11 @@ public class HttpDownloadTask implements IDownloadTask {
 					}
 
 
-					if(imageContentTypes.contains(contentType))
+					if(!this.cancelled && imageContentTypes.contains(contentType))
 					{
 						onImageSuccess(out.toByteArray(), url, contentType, imageReader, logPrinter, logger, environment);
 					}
-					else if(depth <= settings.downloadMaxDepth() && notImageContentTypeScannerCreators.containsKey(contentType))
+					else if(!this.cancelled && depth <= settings.downloadMaxDepth() && notImageContentTypeScannerCreators.containsKey(contentType))
 					{
 						String charset = EncodingDetector.getEncoding(con.getContentType(), out.toByteArray());
 
@@ -231,6 +210,11 @@ public class HttpDownloadTask implements IDownloadTask {
 
 						while((line = reader.readLine()) != null)
 						{
+							if(this.cancelled)
+							{
+								out.close();
+								return;
+							}
 							lines.add(line);
 						}
 
@@ -238,6 +222,8 @@ public class HttpDownloadTask implements IDownloadTask {
 						onContentSuccess(scanner, url, logPrinter, logger, environment, settings);
 					}
 				}
+			} catch (SocketTimeoutException e) {
+				throw e;
 			} catch (Exception e) {
 				logger.write(e);
 			}
@@ -266,7 +252,8 @@ public class HttpDownloadTask implements IDownloadTask {
 
 	@Override
 	public void onSuccess(HttpURLConnection con, String url,
-							IImageReader imageReader, ISwingLogPrinter logPrinter, ILogger logger, IEnvironment environment, ISettings settings) {
+							IImageReader imageReader, ISwingLogPrinter logPrinter,
+							ILogger logger, IEnvironment environment, ISettings settings) throws SocketTimeoutException {
 		onSuccessListener.onSuccess(con, url, imageReader, logPrinter, logger, environment, settings);
 	}
 
@@ -276,7 +263,8 @@ public class HttpDownloadTask implements IDownloadTask {
 	}
 
 	protected void onImageSuccess(byte[] imageData, String url, String mimetype,
-			IImageReader imageReader, ISwingLogPrinter logPrinter, ILogger logger, IEnvironment environment) throws UnsupportedEncodingException, MalformedURLException
+			IImageReader imageReader, ISwingLogPrinter logPrinter, ILogger logger, IEnvironment environment) throws
+			UnsupportedEncodingException, MalformedURLException, IOException
 	{
 		String hostname = (new URL(url)).getHost();
 
@@ -295,19 +283,23 @@ public class HttpDownloadTask implements IDownloadTask {
 
 		File resizedImagePath = environment.getImagePath(String.join(File.separator, new String[] { hostname, "Resized"}), filename);
 
+		(new DirectoryCreator(DirectoryCreator.getParentPath(resizedImagePath.getAbsolutePath()), 4)).create();
+
 		Optional<Pair<Integer, Integer>> resizedImageSize = ResizedImageWriter.writeImage(imageData, mimetype,
 				settings.getResizedImageWidth(), settings.getResizedImageHeight(), false,
-				resizedImagePath, logger);
+				resizedImagePath, logger, new CancelStateReader(this));
 
-		if(!resizedImageSize.isPresent()) throw new ImageWriteFailedException("リサイズ済み画像の保存に失敗しました。");
+		if(!resizedImageSize.isPresent()) return;
 
 		File thumbnailImagePath = environment.getImagePath(String.join(File.separator, new String[] { hostname, "thumbnail"}), filename);
 
+		(new DirectoryCreator(DirectoryCreator.getParentPath(thumbnailImagePath.getAbsolutePath()), 4)).create();
+
 		Optional<Pair<Integer, Integer>> thumbnailImageSize = ResizedImageWriter.writeImage(imageData, mimetype,
 				ThumbnailSize.width, ThumbnailSize.height, true,
-				thumbnailImagePath, logger);
+				thumbnailImagePath, logger, new CancelStateReader(this));
 
-		if(!thumbnailImageSize.isPresent()) throw new ImageWriteFailedException("サムネイル画像の保存に失敗しました。");
+		if(!thumbnailImageSize.isPresent()) return;
 
 		Optional<File> rawImagePath = saveRawImage(imageData, environment.getImagePath(String.join(File.separator, new String[] { hostname }), filename), logger);
 
@@ -321,9 +313,14 @@ public class HttpDownloadTask implements IDownloadTask {
 
 		for(String foundUrl: urls)
 		{
-			System.out.println(foundUrl);
 			if(this.cancelled) break;
-			downloader.download(foundUrl, depth + 1);
+
+			try {
+				Thread.sleep(1);
+				downloader.download(foundUrl, depth + 1);
+			} catch (InterruptedException e) {
+				logger.write(e);
+			}
 		}
 	}
 

@@ -7,22 +7,28 @@ import java.util.LinkedList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.sun.org.apache.xalan.internal.xsltc.compiler.sym;
+
 public class HttpDownloadService implements IDownloadService {
-	protected ExecutorService httpDownloadExecutor;
-	protected LinkedList<IDownloadTask> tasks;
-	protected IDownloadCounter counter;
+	protected volatile ExecutorService httpDownloadExecutor;
+	protected volatile LinkedList<IDownloadTask> tasks;
+	protected volatile IDownloadCounter counter;
+	IOnSearchRequestCancelled onCancelled;
 	protected IImageReader imageReader;
 	protected ISwingLogPrinter logPrinter;
 	protected ILogger logger;
 	protected IEnvironment environment;
 	protected ISettings settings;
+	protected volatile boolean cancelled = false;;
 
-	public HttpDownloadService(Runnable onCompleted, IImageReader imageReader, ISwingLogPrinter logPrinter, ILogger logger,
+	public HttpDownloadService(IOnSearchRequestCompleted onCompleted, IOnSearchRequestCancelled onCancelled,
+			IImageReader imageReader, ISwingLogPrinter logPrinter, ILogger logger,
 			IEnvironment environment, ISettings settings)
 	{
-		this.httpDownloadExecutor = Executors.newCachedThreadPool();
+		this.httpDownloadExecutor = Executors.newFixedThreadPool(16);
 		this.tasks = new LinkedList<IDownloadTask>();
 		this.counter = new HttpDownloadCounter(onCompleted);
+		this.onCancelled = onCancelled;
 		this.imageReader = imageReader;
 		this.logPrinter = logPrinter;
 		this.logger = logger;
@@ -31,32 +37,59 @@ public class HttpDownloadService implements IDownloadService {
 	}
 
 	@Override
-	public IDownloadCounter getCounter()
+	public synchronized IDownloadCounter getCounter()
 	{
 		return this.counter;
 	}
 
-	@Override
-	public void download(String url, int depth) {
-		IDownloadTask task = new HttpDownloadTask(this, depth, url, this.imageReader,
-														this.logPrinter, this.logger,
-														this.environment, this.settings);
+	public boolean isCancelled()
+	{
+		return this.cancelled;
+	}
 
-		this.tasks.offerLast(task);
-
-		this.counter.countUp();
-
-		this.httpDownloadExecutor.submit(task);
+	public synchronized void synchronaizedExecute(Runnable r)
+	{
+		r.run();
 	}
 
 	@Override
-	public void cancel()
+	public void download(String url, int depth, boolean enforce)
 	{
-		IDownloadTask task;
+		this.cancelled = false;
+		download(url, depth);
+	}
 
-		while((task = this.tasks.pollFirst()) != null)
-		{
-			task.cansel();
-		}
+	@Override
+	public void download(String url, int depth) {
+		synchronaizedExecute(() -> {
+			if(this.cancelled) return;
+
+			IDownloadTask task = new HttpDownloadTask(new HttpDownloadTaskConsumer(), this, depth, url, this.imageReader,
+															this.logPrinter, this.logger,
+															this.environment, this.settings);
+
+			this.tasks.offerLast(task);
+
+			this.counter.countUp();
+
+			this.httpDownloadExecutor.submit(task);
+		});
+	}
+
+	@Override
+	public void cansel()
+	{
+		synchronaizedExecute(() -> {
+			this.cancelled = true;
+
+			IDownloadTask task;
+
+			while((task = this.tasks.pollLast()) != null)
+			{
+				task.cansel();
+			}
+
+			onCancelled.onSearchRequestCancelled();
+		});
 	}
 }
