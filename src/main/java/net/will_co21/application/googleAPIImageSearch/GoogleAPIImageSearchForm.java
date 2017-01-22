@@ -175,45 +175,46 @@ public class GoogleAPIImageSearchForm extends JFrame {
 			onSearchRequestCancelled.run();
 		},
 			(File originaImagelPath, File resizedImagePath, File thumbnailPath, int w, int h) -> {
+				EventQueue.invokeLater(() -> {
+					JLabel img = new JLabel(new ImageIcon(thumbnailPath.getAbsolutePath()));
+					img.setBackground(Color.BLACK);
+					img.setPreferredSize(new Dimension(ThumbnailSize.width, ThumbnailSize.height));
+					imagePanel.add(img);
+					img.addMouseListener(new MouseListener() {
 
-			JLabel img = new JLabel(new ImageIcon(thumbnailPath.getAbsolutePath()));
-			img.setBackground(Color.BLACK);
-			img.setPreferredSize(new Dimension(ThumbnailSize.width, ThumbnailSize.height));
-			imagePanel.add(img);
-			img.addMouseListener(new MouseListener() {
+						@Override
+						public void mouseReleased(MouseEvent e) {
+							// TODO 自動生成されたメソッド・スタブ
 
-				@Override
-				public void mouseReleased(MouseEvent e) {
-					// TODO 自動生成されたメソッド・スタブ
+						}
 
-				}
+						@Override
+						public void mousePressed(MouseEvent e) {
+							// TODO 自動生成されたメソッド・スタブ
 
-				@Override
-				public void mousePressed(MouseEvent e) {
-					// TODO 自動生成されたメソッド・スタブ
+						}
 
-				}
+						@Override
+						public void mouseExited(MouseEvent e) {
+							// TODO 自動生成されたメソッド・スタブ
 
-				@Override
-				public void mouseExited(MouseEvent e) {
-					// TODO 自動生成されたメソッド・スタブ
+						}
 
-				}
+						@Override
+						public void mouseEntered(MouseEvent e) {
+							// TODO 自動生成されたメソッド・スタブ
 
-				@Override
-				public void mouseEntered(MouseEvent e) {
-					// TODO 自動生成されたメソッド・スタブ
+						}
 
-				}
+						@Override
+						public void mouseClicked(MouseEvent e) {
+							ImageWindow imageWindow = new ImageWindow(originaImagelPath.getName());
+							imageWindow.displayImage(resizedImagePath, w, h);
+						}
+					});
 
-				@Override
-				public void mouseClicked(MouseEvent e) {
-					ImageWindow imageWindow = new ImageWindow(originaImagelPath.getName());
-					imageWindow.displayImage(resizedImagePath, w, h);
-				}
-			});
-
-			this.revalidate();
+					this.revalidate();
+				});
 		}, s -> {
 			EventQueue.invokeLater(() -> {
 				logWindow.setText(s);
@@ -231,21 +232,25 @@ public class GoogleAPIImageSearchForm extends JFrame {
 		searchButton.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				try {
-					searchButton.setEnabled(false);
-					apiRequester.request(downloader);
-					EventQueue.invokeLater(()-> {
-						searchButton.setText("次を検索");
-					});
-				} catch (Exception ex) {
-					logger.write(ex);
-				}
+				EventQueue.invokeLater(() -> {
+					try {
+						searchButton.setEnabled(false);
+						apiRequester.request(downloader);
+						EventQueue.invokeLater(()-> {
+							searchButton.setText("次を検索");
+						});
+					} catch (Exception ex) {
+						logger.write(ex);
+					}
+				});
 			}
 		});
 
 		onSearchRequestCompleted.setImplements(() -> {
-			searchButton.setEnabled(true);
-			loggingWorker.shutdown();
+			EventQueue.invokeLater(() -> {
+				searchButton.setEnabled(true);
+				loggingWorker.shutdown();
+			});
 		});
 
 		onSearchRequestCancelled.setImplements(() -> {
@@ -254,8 +259,10 @@ public class GoogleAPIImageSearchForm extends JFrame {
 
 		this.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e){
-				shutDownInvoker.get().run();
-				dispose();
+				EventQueue.invokeLater(() -> {
+					shutDownInvoker.get().run();
+					dispose();
+				});
 			}
 		});
 
@@ -267,12 +274,14 @@ public class GoogleAPIImageSearchForm extends JFrame {
 		canselButton.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				try {
-					apiRequester.cancel();
-					downloader.cansel();
-				} catch (Exception ex) {
-					logger.write(ex);
-				}
+				EventQueue.invokeLater(() -> {
+					try {
+						apiRequester.cancel();
+						downloader.cansel();
+					} catch (Exception ex) {
+						logger.write(ex);
+					}
+				});
 			}
 		});
 
