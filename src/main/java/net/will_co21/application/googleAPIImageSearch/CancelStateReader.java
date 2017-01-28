@@ -12,7 +12,6 @@ public class CancelStateReader implements BooleanSupplier {
 
 	@Override
 	public boolean getAsBoolean() {
-		System.out.println(target.isCancelled());
 		return target.isCancelled();
 	}
 }

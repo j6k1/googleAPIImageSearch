@@ -92,4 +92,10 @@ public class HttpDownloadService implements IDownloadService {
 			onCancelled.onSearchRequestCancelled();
 		});
 	}
+
+	@Override
+	public void shutdown()
+	{
+		this.httpDownloadExecutor.shutdown();
+	}
 }

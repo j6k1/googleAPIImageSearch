@@ -4,4 +4,5 @@ public interface ILogger {
 	public void write(String str);
 	public void write(Exception e);
 	public void write(Error e);
+	public void write(Throwable t);
 }

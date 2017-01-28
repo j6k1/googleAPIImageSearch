@@ -68,4 +68,10 @@ public class MockGoogleAPIRequester implements IGoogleAPIRequester {
 	public void cancel() {
 		this.cancelled = true;
 	}
+
+	@Override
+	public void shutdown()
+	{
+
+	}
 }

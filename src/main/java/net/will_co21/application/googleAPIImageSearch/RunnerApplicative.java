@@ -9,6 +9,10 @@ public class RunnerApplicative implements Runnable {
 		this.runner.run();
 	}
 
+	public void runIfImplemented() {
+		if(runner != null) runner.run();
+	}
+
 	public void setImplements(Runnable r)
 	{
 		this.runner = r;

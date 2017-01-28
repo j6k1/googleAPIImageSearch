@@ -6,4 +6,5 @@ public interface IGoogleAPIRequester {
 	public void request(IDownloadService downloader) throws Exception;
 	public void reset();
 	public void cancel();
+	public void shutdown();
 }

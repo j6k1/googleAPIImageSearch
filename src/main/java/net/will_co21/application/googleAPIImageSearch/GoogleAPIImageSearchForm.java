@@ -52,7 +52,9 @@ public class GoogleAPIImageSearchForm extends JFrame {
 	private final IGoogleAPIRequester apiRequester;
 	private final IDownloadService downloader;
 	protected final ExecutorService loggingExecutor;
-	public final Optional<Runnable> shutDownInvoker;
+	public final RunnerApplicative shutDownInvoker;
+	public final Optional<Runnable> canselDownInvoker;
+	protected volatile boolean isClosed = false;
 	/**
 	 * Launch the application.
 	 */
@@ -62,40 +64,11 @@ public class GoogleAPIImageSearchForm extends JFrame {
 
 			public void run() {
 				try {
-
-					ExecutorService loggingExecutor = Executors.newSingleThreadExecutor();
-
-					LoggingWorker loggingWorker = new LoggingWorker(new ConsoleLogger());
-
-					loggingExecutor.submit(loggingWorker);
-
-					ILogger logger = new ILogger() {
-						public void write(String s)
-						{
-							loggingWorker.post(s);
-						}
-
-						public void write(Exception e)
-						{
-							write(LoggingExceptionMessageBuilder.build(e));
-						}
-
-						public void write(Error e)
-						{
-							write(LoggingExceptionMessageBuilder.build(e));
-						}
-					};
-
-					try {
-						frame = new GoogleAPIImageSearchForm(loggingExecutor, loggingWorker, logger);
-						frame.setVisible(true);
-					} catch (Exception e) {
-						logger.write(e);
-						if(frame != null) frame.shutDownInvoker.ifPresent(f -> f.run());
-					}
+					frame = new GoogleAPIImageSearchForm();
+					frame.setVisible(true);
 				} catch (Exception e) {
-					if(frame != null) frame.shutDownInvoker.ifPresent(f -> f.run());
 					e.printStackTrace();
+					if(frame != null && frame.shutDownInvoker != null) frame.shutDownInvoker.runIfImplemented();
 				}
 			}
 		});
@@ -107,7 +80,7 @@ public class GoogleAPIImageSearchForm extends JFrame {
 	 * @throws FileNotFoundException
 	 * @throws UnsupportedEncodingException
 	 */
-	public GoogleAPIImageSearchForm(ExecutorService loggingExecutor, LoggingWorker loggingWorker, ILogger logger) throws UnsupportedEncodingException, FileNotFoundException, IOException {
+	public GoogleAPIImageSearchForm() throws UnsupportedEncodingException, FileNotFoundException, IOException {
 		try {
 			UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
 			SwingUtilities.updateComponentTreeUI(this);
@@ -123,8 +96,6 @@ public class GoogleAPIImageSearchForm extends JFrame {
 
 		ISettings settings = new GoogleAPIImageSearchSettings(new File("settings.json"));
 		settings.validate();
-
-		this.loggingExecutor = loggingExecutor;
 
 		setBounds(new Rectangle(100, 100, 800, 600));
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -169,8 +140,42 @@ public class GoogleAPIImageSearchForm extends JFrame {
 		RunnerApplicative onSearchRequestCompleted = new RunnerApplicative();
 		RunnerApplicative onSearchRequestCancelled = new RunnerApplicative();
 
+		shutDownInvoker = new RunnerApplicative();
+
+		loggingExecutor = Executors.newSingleThreadExecutor();
+
+		LoggingWorker loggingWorker = new LoggingWorker(new ConsoleLogger());
+
+		loggingExecutor.submit(loggingWorker);
+
+		ILogger logger = new ILogger() {
+			public void write(String s)
+			{
+				loggingWorker.post(s);
+			}
+
+			public void write(Exception e)
+			{
+				write(StackTraceString.toString(e));
+			}
+
+			public void write(Error e)
+			{
+				write(StackTraceString.toString(e));
+			}
+
+			public void write(Throwable t)
+			{
+				write(StackTraceString.toString(t));
+			}
+		};
+
 		downloader = new HttpDownloadService(() -> {
 			onSearchRequestCancelled.run();
+			if(isClosed)
+			{
+				shutDownInvoker.run();
+			}
 		}, () -> {
 			onSearchRequestCancelled.run();
 		},
@@ -223,7 +228,14 @@ public class GoogleAPIImageSearchForm extends JFrame {
 
 		apiRequester = new MockGoogleAPIRequester(new File(String.join(File.separator, new String[] { "mockdata", "googleapi.json" })));
 
-		shutDownInvoker = Optional.of(() -> {
+		shutDownInvoker.setImplements(() -> {
+			if(apiRequester != null) apiRequester.shutdown();
+			if(downloader != null) downloader.shutdown();
+			if(loggingWorker != null) loggingWorker.shutdown();
+			if(loggingExecutor != null) loggingExecutor.shutdown();
+		});
+
+		canselDownInvoker = Optional.of(() -> {
 			apiRequester.cancel();
 			downloader.cansel();
 		});
@@ -260,7 +272,8 @@ public class GoogleAPIImageSearchForm extends JFrame {
 		this.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e){
 				EventQueue.invokeLater(() -> {
-					shutDownInvoker.get().run();
+					isClosed = true;
+					canselDownInvoker.get().run();
 					dispose();
 				});
 			}
