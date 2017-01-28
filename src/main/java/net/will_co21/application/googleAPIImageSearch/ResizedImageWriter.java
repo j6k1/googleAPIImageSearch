@@ -124,28 +124,20 @@ public class ResizedImageWriter {
 		} catch (IIOException e) {
 			error = true;
 		} catch (IOException e) {
+			error = true;
 			logger.write(e);
-			writer.dispose();
-			if(path.isFile())
-			{
-				if(!path.delete()) logger.write(String.format("ファイル%sを削除できませんでした。", path.getAbsolutePath()));
-			}
 			throw e;
 		} catch (Exception e) {
+			error = true;
 			logger.write(e);
-			writer.dispose();
-			if(path.isFile())
-			{
-				if(!path.delete()) logger.write(String.format("ファイル%sを削除できませんでした。", path.getAbsolutePath()));
-			}
 			throw e;
 		} finally {
+			if(error) if(path.isFile()) if(!path.delete()) logger.write(String.format("ファイル%sを削除できませんでした。", path.getAbsolutePath()));
 			if(reader != null) reader.dispose();
 			if(writer != null)
 			{
 				writer.dispose();
 			}
-			if(error) if(path.isFile()) if(!path.delete()) logger.write(String.format("ファイル%sを削除できませんでした。", path.getAbsolutePath()));
 		}
 		return Optional.empty();
 	}
