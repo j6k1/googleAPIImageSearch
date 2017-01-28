@@ -125,11 +125,9 @@ public class ResizedImageWriter {
 			error = true;
 		} catch (IOException e) {
 			error = true;
-			logger.write(e);
 			throw e;
 		} catch (Exception e) {
 			error = true;
-			logger.write(e);
 			throw e;
 		} finally {
 			if(error) if(path.isFile()) if(!path.delete()) logger.write(String.format("ファイル%sを削除できませんでした。", path.getAbsolutePath()));
