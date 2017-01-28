@@ -71,6 +71,9 @@ public class ImageSizeCalculator {
 		} catch (IOException e) {
 			logger.write(e);
 			throw e;
+		} catch (Exception e) {
+			logger.write(e);
+			throw e;
 		} finally {
 			if(reader != null) reader.dispose();
 		}

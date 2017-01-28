@@ -333,9 +333,20 @@ public class HttpDownloadTask implements IDownloadTask {
 				ThumbnailSize.width, ThumbnailSize.height, true,
 				thumbnailImagePath, logger, new CancelStateReader(this));
 
-		if(!thumbnailImageSize.isPresent()) return;
+		if(!thumbnailImageSize.isPresent())
+		{
+			if(!resizedImagePath.delete()) logger.write(String.format("ファイル%sを削除できませんでした。", resizedImagePath.getAbsolutePath()));
+			return;
+		}
 
 		Optional<File> rawImagePath = saveRawImage(imageData, environment.getImagePath(String.join(File.separator, new String[] { hostname }), filename), logger);
+
+		if(!rawImagePath.isPresent())
+		{
+			if(!resizedImagePath.delete()) logger.write(String.format("ファイル%sを削除できませんでした。", resizedImagePath.getAbsolutePath()));
+			if(!thumbnailImagePath.delete()) logger.write(String.format("ファイル%sを削除できませんでした。", thumbnailImagePath.getAbsolutePath()));
+			return;
+		}
 
 		resizedImageSize.ifPresent(pair -> rawImagePath.ifPresent((path) -> imageReader.readImages(path, resizedImagePath, thumbnailImagePath, pair.fst, pair.snd)));
 	}
@@ -379,7 +390,11 @@ public class HttpDownloadTask implements IDownloadTask {
 			}
 		}
 
-		if(error) return Optional.empty();
+		if(error)
+		{
+			if(!path.delete()) logger.write(String.format("ファイル%sを削除できませんでした。", path.getAbsolutePath()));
+			return Optional.empty();
+		}
 		else return Optional.of(path);
 	}
 }

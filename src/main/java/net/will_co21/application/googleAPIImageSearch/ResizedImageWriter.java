@@ -25,6 +25,8 @@ public class ResizedImageWriter {
 		int imageWidth = -1;
 		int imageHeight = -1;
 
+		boolean error = false;
+
 		try {
 			Iterator<ImageReader> rit = ImageIO.getImageReadersByMIMEType(mimetype);
 
@@ -35,94 +37,116 @@ public class ResizedImageWriter {
 			Iterator<ImageWriter> wit = ImageIO.getImageWritersByMIMEType(mimetype);
 
 			writer = wit.next();
-			writer.setOutput(new FileImageOutputStream(path));
-			writer.prepareWriteSequence(null);
 
-			int dw = 0, dh = 0;
+			try(FileImageOutputStream ostream = new FileImageOutputStream(path)) {
+				writer.setOutput(ostream);
+				writer.prepareWriteSequence(null);
 
-			int i = 0;
+				int dw = 0, dh = 0;
 
-			try {
-				while(true)
-				{
-					if(canselStateReader.getAsBoolean())
+				int i = 0;
+
+				try {
+					while(true)
 					{
-						if(path.isFile()) path.delete();
-						reader.dispose();
-						writer.dispose();
-						return Optional.empty();
-					}
+						if(canselStateReader.getAsBoolean())
+						{
+							if(path.isFile())
+							{
+								writer.endWriteSequence();
+								writer.dispose();
+								if(!path.delete()) logger.write(String.format("ファイル%sを削除できませんでした。", path.getAbsolutePath()));
+							}
+							reader.dispose();
+							writer.dispose();
+							return Optional.empty();
+						}
 
-					BufferedImage sourceImage = reader.read(i);
+						BufferedImage sourceImage = reader.read(i);
 
-					if(sourceImage.getHeight() <= h && sourceImage.getWidth() <= w)
-					{
-						dw = sourceImage.getWidth();
-						dh = sourceImage.getHeight();
-					}
-					else if((int)((double)sourceImage.getHeight() / (double)(sourceImage.getWidth() / (double)w)) > h)
-					{
-						dh = h;
-						dw = (int)((double)sourceImage.getWidth() / ((double)sourceImage.getHeight() / (double)h));
-					}
-					else
-					{
-						dw = w;
-						dh = (int)((double)sourceImage.getHeight() / ((double)sourceImage.getWidth() / (double)w));
-					}
+						if(sourceImage.getHeight() <= h && sourceImage.getWidth() <= w)
+						{
+							dw = sourceImage.getWidth();
+							dh = sourceImage.getHeight();
+						}
+						else if((int)((double)sourceImage.getHeight() / (double)(sourceImage.getWidth() / (double)w)) > h)
+						{
+							dh = h;
+							dw = (int)((double)sourceImage.getWidth() / ((double)sourceImage.getHeight() / (double)h));
+						}
+						else
+						{
+							dw = w;
+							dh = (int)((double)sourceImage.getHeight() / ((double)sourceImage.getWidth() / (double)w));
+						}
 
-					imageWidth = Math.max(imageWidth, dw);
-					imageHeight = Math.max(imageHeight, dh);
+						imageWidth = Math.max(imageWidth, dw);
+						imageHeight = Math.max(imageHeight, dh);
 
-					int x,y;
+						int x,y;
 
-					if(fixedSize)
-					{
-						x = (w - dw) / 2;
-						y = (h - dh) / 2;
+						if(fixedSize)
+						{
+							x = (w - dw) / 2;
+							y = (h - dh) / 2;
+						}
+						else
+						{
+							x = 0;
+							y = 0;
+							w = dw;
+							h = dh;
+						}
+
+						BufferedImage thumbnail = new BufferedImage(w, h, sourceImage.getType());
+						thumbnail
+							.getGraphics()
+							.drawImage(sourceImage.getScaledInstance(dw, dh, sourceImage.getType()),
+																	x, y, null);
+						writer.writeToSequence(new IIOImage(thumbnail, null, null), null);
+						++i;
 					}
-					else
-					{
-						x = 0;
-						y = 0;
-						w = dw;
-						h = dh;
-					}
-
-					BufferedImage thumbnail = new BufferedImage(w, h, sourceImage.getType());
-					thumbnail
-						.getGraphics()
-						.drawImage(sourceImage.getScaledInstance(dw, dh, sourceImage.getType()),
-																x, y, null);
-					writer.writeToSequence(new IIOImage(thumbnail, null, null), null);
-					++i;
+				} catch (IndexOutOfBoundsException e) {
 				}
-			} catch (IndexOutOfBoundsException e) {
-			}
-			writer.endWriteSequence();
+				writer.endWriteSequence();
 
-			if(i == 0)
-			{
-				path.delete();
-				return Optional.empty();
-			}
-			else
-			{
-				return Optional.of(new Pair<Integer, Integer>(imageWidth, imageHeight));
+				if(i == 0)
+				{
+					error = true;
+				}
+				else
+				{
+					return Optional.of(new Pair<Integer, Integer>(imageWidth, imageHeight));
+				}
 			}
 		} catch (UnsupportedOperationException e) {
-			if(path.isFile()) path.delete();
-			return Optional.empty();
+			error = true;
 		} catch (IIOException e) {
-			if(path.isFile()) path.delete();
-			return Optional.empty();
+			error = true;
 		} catch (IOException e) {
 			logger.write(e);
-			if(path.isFile()) path.delete();
+			writer.dispose();
+			if(path.isFile())
+			{
+				if(!path.delete()) logger.write(String.format("ファイル%sを削除できませんでした。", path.getAbsolutePath()));
+			}
+			throw e;
+		} catch (Exception e) {
+			logger.write(e);
+			writer.dispose();
+			if(path.isFile())
+			{
+				if(!path.delete()) logger.write(String.format("ファイル%sを削除できませんでした。", path.getAbsolutePath()));
+			}
 			throw e;
 		} finally {
 			if(reader != null) reader.dispose();
-			if(writer != null) writer.dispose();
+			if(writer != null)
+			{
+				writer.dispose();
+			}
+			if(error) if(path.isFile()) if(!path.delete()) logger.write(String.format("ファイル%sを削除できませんでした。", path.getAbsolutePath()));
 		}
+		return Optional.empty();
 	}
 }
