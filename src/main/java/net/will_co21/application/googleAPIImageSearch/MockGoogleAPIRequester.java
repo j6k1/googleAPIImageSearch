@@ -56,7 +56,7 @@ public class MockGoogleAPIRequester implements IGoogleAPIRequester {
 		for(String url: urls)
 		{
 			if(cancelled) break;
-			downloader.download(url, 1);
+			downloader.download(url, 1, true);
 		}
 	}
 
