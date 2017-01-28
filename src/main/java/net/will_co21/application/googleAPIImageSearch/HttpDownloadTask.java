@@ -174,6 +174,31 @@ public class HttpDownloadTask implements IDownloadTask {
 					return;
 				}
 
+				if(imageContentTypes.contains(contentType))
+				{
+					String filename = createFileName(url, contentType);
+
+					String hostname = (new URL(url)).getHost();
+
+					if(downloader.alreadyDownload(filename))
+					{
+						return;
+					}
+					else if(environment.getImagePath(String.join(File.separator, new String[] { hostname }), filename).isFile())
+					{
+						downloader.addAlreadyDownloads(filename);
+
+						File resizedImagePath = environment.getImagePath(String.join(File.separator, new String[] { hostname, "Resized"}), filename);
+						File thumbnailImagePath = environment.getImagePath(String.join(File.separator, new String[] { hostname, "thumbnail"}), filename);
+						File rawImagePath = environment.getImagePath(String.join(File.separator, new String[] { hostname }), filename);
+
+						Optional<Pair<Integer, Integer>> resizedImageSize = ImageSizeCalculator.calcImageSize(resizedImagePath, contentType, logger, new CancelStateReader(this));
+
+						resizedImageSize.ifPresent(pair -> imageReader.readImages(rawImagePath, resizedImagePath, thumbnailImagePath, pair.fst, pair.snd));
+
+						return;
+					}
+				}
 				InputStream in = con.getInputStream();
 
 				try(ByteArrayOutputStream out = new ByteArrayOutputStream()) {
@@ -262,12 +287,8 @@ public class HttpDownloadTask implements IDownloadTask {
 		onErrorListener.onError(con, url, logPrinter, logger, environment, settings);
 	}
 
-	protected void onImageSuccess(byte[] imageData, String url, String mimetype,
-			IImageReader imageReader, ISwingLogPrinter logPrinter, ILogger logger, IEnvironment environment) throws
-			UnsupportedEncodingException, MalformedURLException, IOException
+	protected String createFileName(String url, String mimetype)
 	{
-		String hostname = (new URL(url)).getHost();
-
 		int extIndex = url.lastIndexOf('.');
 
 		String filename;
@@ -280,6 +301,19 @@ public class HttpDownloadTask implements IDownloadTask {
 		{
 			filename = (new FileNameNormalizer(url)).normalizedName();
 		}
+
+		return filename;
+	}
+
+	protected void onImageSuccess(byte[] imageData, String url, String mimetype,
+			IImageReader imageReader, ISwingLogPrinter logPrinter, ILogger logger, IEnvironment environment) throws
+			UnsupportedEncodingException, MalformedURLException, IOException
+	{
+		String hostname = (new URL(url)).getHost();
+
+		String filename = createFileName(url, mimetype);
+
+		downloader.addAlreadyDownloads(filename);
 
 		File resizedImagePath = environment.getImagePath(String.join(File.separator, new String[] { hostname, "Resized"}), filename);
 

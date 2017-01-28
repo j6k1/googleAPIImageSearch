@@ -30,7 +30,7 @@ public class ImageWindow extends JFrame {
 	{
 		JLabel img = new JLabel(new ImageIcon(imagePath.getAbsolutePath()));
 
-		this.setBounds(0, 0, w, h);
+		this.setBounds(0, 0, w, h + 30);
 
 		this.add(img);
 		this.setVisible(true);

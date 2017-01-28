@@ -3,6 +3,7 @@ package net.will_co21.application.googleAPIImageSearch;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -20,6 +21,7 @@ public class HttpDownloadService implements IDownloadService {
 	protected IEnvironment environment;
 	protected ISettings settings;
 	protected volatile boolean cancelled = false;;
+	protected volatile HashSet<String> alreadyDownloads;
 
 	public HttpDownloadService(IOnSearchRequestCompleted onCompleted, IOnSearchRequestCancelled onCancelled,
 			IImageReader imageReader, ISwingLogPrinter logPrinter, ILogger logger,
@@ -34,6 +36,7 @@ public class HttpDownloadService implements IDownloadService {
 		this.logger = logger;
 		this.environment = environment;
 		this.settings = settings;
+		this.alreadyDownloads = new HashSet<String>();
 	}
 
 	@Override
@@ -97,5 +100,23 @@ public class HttpDownloadService implements IDownloadService {
 	public void shutdown()
 	{
 		this.httpDownloadExecutor.shutdown();
+	}
+
+	@Override
+	public synchronized void addAlreadyDownloads(String filename)
+	{
+		this.alreadyDownloads.add(filename);
+	}
+
+	@Override
+	public boolean alreadyDownload(String filename)
+	{
+		return this.alreadyDownloads.contains(filename);
+	}
+
+	@Override
+	public synchronized void resetAlreadyDownloads()
+	{
+		this.alreadyDownloads.clear();
 	}
 }

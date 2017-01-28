@@ -7,4 +7,7 @@ public interface IDownloadService {
 	public void cansel();
 	public void shutdown();
 	public boolean isCancelled();
+	public void addAlreadyDownloads(String filename);
+	public boolean alreadyDownload(String filename);
+	public void resetAlreadyDownloads();
 }

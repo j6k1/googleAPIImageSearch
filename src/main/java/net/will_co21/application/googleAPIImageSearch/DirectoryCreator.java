@@ -49,7 +49,7 @@ public class DirectoryCreator {
 			if(separatorIndex == -1) throw new DirectoryCreateFailedException("ディレクトリ" + f.getAbsolutePath() + "が存在しません。");
 
 			create(f.getAbsolutePath().substring(0, separatorIndex), depth + 1);
-			if(!f.mkdir()) throw new DirectoryCreateFailedException("ディレクトリ" + f.getAbsolutePath() + "の作成に失敗しました。");
+			if(!f.mkdir() && !f.isDirectory()) throw new DirectoryCreateFailedException("ディレクトリ" + f.getAbsolutePath() + "の作成に失敗しました。");
 			else return true;
 		}
 	}

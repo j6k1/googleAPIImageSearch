@@ -22,6 +22,9 @@ public class ResizedImageWriter {
 	{
 		ImageReader reader = null;
 		ImageWriter writer = null;
+		int imageWidth = -1;
+		int imageHeight = -1;
+
 		try {
 			Iterator<ImageReader> rit = ImageIO.getImageReadersByMIMEType(mimetype);
 
@@ -37,9 +40,9 @@ public class ResizedImageWriter {
 
 			int dw = 0, dh = 0;
 
-			try {
-				int i = 0;
+			int i = 0;
 
+			try {
 				while(true)
 				{
 					if(canselStateReader.getAsBoolean())
@@ -68,6 +71,9 @@ public class ResizedImageWriter {
 						dh = (int)((double)sourceImage.getHeight() / ((double)sourceImage.getWidth() / (double)w));
 					}
 
+					imageWidth = Math.max(imageWidth, dw);
+					imageHeight = Math.max(imageHeight, dh);
+
 					int x,y;
 
 					if(fixedSize)
@@ -94,7 +100,16 @@ public class ResizedImageWriter {
 			} catch (IndexOutOfBoundsException e) {
 			}
 			writer.endWriteSequence();
-			return Optional.of(new Pair<Integer, Integer>(dw, dh));
+
+			if(i == 0)
+			{
+				path.delete();
+				return Optional.empty();
+			}
+			else
+			{
+				return Optional.of(new Pair<Integer, Integer>(imageWidth, imageHeight));
+			}
 		} catch (UnsupportedOperationException e) {
 			if(path.isFile()) path.delete();
 			return Optional.empty();

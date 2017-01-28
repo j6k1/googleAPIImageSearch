@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -200,7 +201,7 @@ public class GoogleAPIImageSearchForm extends JFrame {
 		}, () -> {
 			onSearchRequestCancelled.run();
 		},
-			(File originaImagelPath, File resizedImagePath, File thumbnailPath, int w, int h) -> {
+			(File originalImagelPath, File resizedImagePath, File thumbnailPath, int w, int h) -> {
 				EventQueue.invokeLater(() -> {
 					JLabel img = new JLabel(new ImageIcon(thumbnailPath.getAbsolutePath()));
 					img.setBackground(Color.BLACK);
@@ -241,7 +242,7 @@ public class GoogleAPIImageSearchForm extends JFrame {
 
 						@Override
 						public void mouseClicked(MouseEvent e) {
-							ImageWindow imageWindow = new ImageWindow(originaImagelPath.getName());
+							ImageWindow imageWindow = new ImageWindow(originalImagelPath.getName());
 							imageWindow.displayImage(resizedImagePath, w, h);
 						}
 					});
@@ -275,6 +276,7 @@ public class GoogleAPIImageSearchForm extends JFrame {
 				imagePanel.removeAll();
 				this.revalidate();
 				apiRequester.reset();
+				downloader.resetAlreadyDownloads();
 				apiRequester.setKeyword(searchKeyword.getText());
 				lastKeyword = searchKeyword.getText();
 				searchButton.setText("検索");
