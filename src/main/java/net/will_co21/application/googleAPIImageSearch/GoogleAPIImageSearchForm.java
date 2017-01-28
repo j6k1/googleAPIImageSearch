@@ -153,11 +153,10 @@ public class GoogleAPIImageSearchForm extends JFrame {
 
 		environment.setSafeMode(settings.getEnableSafeSearch());
 
-		RunnerApplicative onSearchRequestCompleted = new RunnerApplicative();
 		RunnerApplicative onSearchRequestCancelled = new RunnerApplicative();
 
 		shutDownInvoker = new RunnerApplicative();
-		RunnerApplicative onAPIRequesterRequestCompletedInvoker = new RunnerApplicative();
+		RunnerApplicative onAPIRequesterRequestCompleted = new RunnerApplicative();
 		loggingExecutor = Executors.newSingleThreadExecutor();
 
 		LoggingWorker loggingWorker = new LoggingWorker(new ConsoleLogger());
@@ -193,7 +192,7 @@ public class GoogleAPIImageSearchForm extends JFrame {
 		};
 
 		downloader = new HttpDownloadService(() -> {
-			onAPIRequesterRequestCompletedInvoker.run();
+			onAPIRequesterRequestCompleted.run();
 			if(isClosed)
 			{
 				shutDownInvoker.run();
@@ -260,14 +259,16 @@ public class GoogleAPIImageSearchForm extends JFrame {
 			if(loggingExecutor != null) loggingExecutor.shutdown();
 		});
 
-		onAPIRequesterRequestCompletedInvoker.setImplements(() -> apiRequester.onSearchRequestCompleted());
-
 		canselRequestInvoker = Optional.of(() -> {
 			apiRequester.cancel();
 			downloader.cansel();
 		});
 		JButton searchButton = new JButton("検索");
 
+		onAPIRequesterRequestCompleted.setImplements(() -> {
+			searchButton.setEnabled(true);
+			apiRequester.onSearchRequestCompleted();
+		});
 
 		Runnable searchRunner = () -> {
 			if(searchKeyword.getText().equals("")) return;
@@ -299,13 +300,6 @@ public class GoogleAPIImageSearchForm extends JFrame {
 			public void mouseClicked(MouseEvent e) {
 				EventQueue.invokeLater(searchRunner);
 			}
-		});
-
-		onSearchRequestCompleted.setImplements(() -> {
-			EventQueue.invokeLater(() -> {
-				searchButton.setEnabled(true);
-				loggingWorker.shutdown();
-			});
 		});
 
 		onSearchRequestCancelled.setImplements(() -> {
