@@ -198,7 +198,7 @@ public class HttpDownloadTask implements IDownloadTask {
 					{
 						onImageSuccess(out.toByteArray(), url, contentType, imageReader, logPrinter, logger, environment);
 					}
-					else if(!this.cancelled && depth <= settings.downloadMaxDepth() && notImageContentTypeScannerCreators.containsKey(contentType))
+					else if(!this.cancelled && depth <= settings.getDownloadMaxDepth() && notImageContentTypeScannerCreators.containsKey(contentType))
 					{
 						String charset = EncodingDetector.getEncoding(con.getContentType(), out.toByteArray());
 
@@ -283,7 +283,7 @@ public class HttpDownloadTask implements IDownloadTask {
 
 		File resizedImagePath = environment.getImagePath(String.join(File.separator, new String[] { hostname, "Resized"}), filename);
 
-		(new DirectoryCreator(DirectoryCreator.getParentPath(resizedImagePath.getAbsolutePath()), 4)).create();
+		(new DirectoryCreator(DirectoryCreator.getParentPath(resizedImagePath.getAbsolutePath()), 2)).create();
 
 		Optional<Pair<Integer, Integer>> resizedImageSize = ResizedImageWriter.writeImage(imageData, mimetype,
 				settings.getResizedImageWidth(), settings.getResizedImageHeight(), false,
@@ -293,7 +293,7 @@ public class HttpDownloadTask implements IDownloadTask {
 
 		File thumbnailImagePath = environment.getImagePath(String.join(File.separator, new String[] { hostname, "thumbnail"}), filename);
 
-		(new DirectoryCreator(DirectoryCreator.getParentPath(thumbnailImagePath.getAbsolutePath()), 4)).create();
+		(new DirectoryCreator(DirectoryCreator.getParentPath(thumbnailImagePath.getAbsolutePath()), 2)).create();
 
 		Optional<Pair<Integer, Integer>> thumbnailImageSize = ResizedImageWriter.writeImage(imageData, mimetype,
 				ThumbnailSize.width, ThumbnailSize.height, true,
@@ -307,13 +307,15 @@ public class HttpDownloadTask implements IDownloadTask {
 	}
 
 	protected void onContentSuccess(IContentScanner scanner, String url,
-									ISwingLogPrinter logPrinter, ILogger logger, IEnvironment environment, ISettings settings)
+									ISwingLogPrinter logPrinter, ILogger logger, IEnvironment environment, ISettings settings) throws MalformedURLException
 	{
 		List<String> urls = scanner.getURLList(new URLNormalizer(url));
 
 		for(String foundUrl: urls)
 		{
 			if(this.cancelled) break;
+
+			if(IgNoreHostNames.contains((new URL(foundUrl)).getHost())) continue;
 
 			try {
 				Thread.sleep(1);

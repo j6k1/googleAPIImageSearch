@@ -31,7 +31,7 @@ public class MockGoogleAPIRequester implements IGoogleAPIRequester {
 		cancelled = false;
 		LinkedList<String> lines = new LinkedList<String>();
 
-		try(BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(jsonPath.getAbsolutePath()),"UTF-8"))) {
+		try(BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(jsonPath),"UTF-8"))) {
 
 			String line;
 
@@ -71,6 +71,18 @@ public class MockGoogleAPIRequester implements IGoogleAPIRequester {
 
 	@Override
 	public void shutdown()
+	{
+
+	}
+
+	@Override
+	public void onSearchRequestCompleted()
+	{
+
+	}
+
+	@Override
+	public void setKeyword(String keyword)
 	{
 
 	}

@@ -7,10 +7,15 @@ import java.awt.EventQueue;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.BoxLayout;
 import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+
 import javax.swing.JTextField;
 import javax.swing.JCheckBox;
 import javax.swing.JButton;
@@ -31,6 +36,9 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.JFormattedTextField;
 import javax.swing.JScrollPane;
+
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -43,6 +51,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Consumer;
 
 public class GoogleAPIImageSearchForm extends JFrame {
 
@@ -53,8 +62,10 @@ public class GoogleAPIImageSearchForm extends JFrame {
 	private final IDownloadService downloader;
 	protected final ExecutorService loggingExecutor;
 	public final RunnerApplicative shutDownInvoker;
-	public final Optional<Runnable> canselDownInvoker;
+	public final Optional<Runnable> canselRequestInvoker;
 	protected volatile boolean isClosed = false;
+	protected volatile String lastKeyword = "";
+	protected volatile String originalSearchButtonText = "検索";
 	/**
 	 * Launch the application.
 	 */
@@ -66,6 +77,8 @@ public class GoogleAPIImageSearchForm extends JFrame {
 				try {
 					frame = new GoogleAPIImageSearchForm();
 					frame.setVisible(true);
+				} catch (InvalidSettingException e) {
+					JOptionPane.showMessageDialog(frame, e.getMessage());
 				} catch (Exception e) {
 					e.printStackTrace();
 					if(frame != null && frame.shutDownInvoker != null) frame.shutDownInvoker.runIfImplemented();
@@ -94,7 +107,7 @@ public class GoogleAPIImageSearchForm extends JFrame {
 			System.out.println(e.getMessage());
 		}
 
-		ISettings settings = new GoogleAPIImageSearchSettings(new File("settings.json"));
+		ISettings settings = new GoogleAPIImageSearchSettings(new File("settings.json"), str -> JOptionPane.showMessageDialog(this, str));
 		settings.validate();
 
 		setBounds(new Rectangle(100, 100, 800, 600));
@@ -122,13 +135,13 @@ public class GoogleAPIImageSearchForm extends JFrame {
 		logWindow.setSize(new Dimension(0, 20));
 
 		logPanel.add(logWindow);
-		logWindow.setColumns(76);
+		logWindow.setColumns(82);
 		contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS));
 		contentPane.add(headerPanel);
 
 		JScrollPane imageScrollPanel = new JScrollPane();
 		JPanel imagePanel = new JPanel();
-		imagePanel.setLayout(new GridLayout(3, 5, 3, 3));
+		imagePanel.setLayout(new GridBagLayout());
 		JPanel imageOuterPanel = new JPanel();
 		((FlowLayout)imageOuterPanel.getLayout()).setAlignment(FlowLayout.LEFT);
 		imageOuterPanel.add(imagePanel);
@@ -137,11 +150,13 @@ public class GoogleAPIImageSearchForm extends JFrame {
 
 		IEnvironment environment = new GoogleAPIImageSearchEnvironment(settings);
 
+		environment.setSafeMode(settings.getEnableSafeSearch());
+
 		RunnerApplicative onSearchRequestCompleted = new RunnerApplicative();
 		RunnerApplicative onSearchRequestCancelled = new RunnerApplicative();
 
 		shutDownInvoker = new RunnerApplicative();
-
+		RunnerApplicative onAPIRequesterRequestCompletedInvoker = new RunnerApplicative();
 		loggingExecutor = Executors.newSingleThreadExecutor();
 
 		LoggingWorker loggingWorker = new LoggingWorker(new ConsoleLogger());
@@ -170,8 +185,14 @@ public class GoogleAPIImageSearchForm extends JFrame {
 			}
 		};
 
+		ISwingLogPrinter logPrinter = s -> {
+			EventQueue.invokeLater(() -> {
+				logWindow.setText(s);
+			});
+		};
+
 		downloader = new HttpDownloadService(() -> {
-			onSearchRequestCancelled.run();
+			onAPIRequesterRequestCompletedInvoker.run();
 			if(isClosed)
 			{
 				shutDownInvoker.run();
@@ -184,6 +205,13 @@ public class GoogleAPIImageSearchForm extends JFrame {
 					JLabel img = new JLabel(new ImageIcon(thumbnailPath.getAbsolutePath()));
 					img.setBackground(Color.BLACK);
 					img.setPreferredSize(new Dimension(ThumbnailSize.width, ThumbnailSize.height));
+					GridBagConstraints gbc = new GridBagConstraints();
+					gbc.ipadx = 5;
+					gbc.ipady = 5;
+					gbc.gridx = imagePanel.getComponentCount() % 5;
+					gbc.gridy = imagePanel.getComponentCount() / 5;
+
+					((GridBagLayout)imagePanel.getLayout()).setConstraints(img, gbc);
 					imagePanel.add(img);
 					img.addMouseListener(new MouseListener() {
 
@@ -220,13 +248,9 @@ public class GoogleAPIImageSearchForm extends JFrame {
 
 					this.revalidate();
 				});
-		}, s -> {
-			EventQueue.invokeLater(() -> {
-				logWindow.setText(s);
-			});
-		}, logger, environment, settings);
+		}, logPrinter, logger, environment, settings);
 
-		apiRequester = new MockGoogleAPIRequester(new File(String.join(File.separator, new String[] { "mockdata", "googleapi.json" })));
+		apiRequester = new HttpsGoogleAPIRequester(settings, logPrinter, logger);
 
 		shutDownInvoker.setImplements(() -> {
 			if(apiRequester != null) apiRequester.shutdown();
@@ -235,26 +259,43 @@ public class GoogleAPIImageSearchForm extends JFrame {
 			if(loggingExecutor != null) loggingExecutor.shutdown();
 		});
 
-		canselDownInvoker = Optional.of(() -> {
+		onAPIRequesterRequestCompletedInvoker.setImplements(() -> apiRequester.onSearchRequestCompleted());
+
+		canselRequestInvoker = Optional.of(() -> {
 			apiRequester.cancel();
 			downloader.cansel();
 		});
-
 		JButton searchButton = new JButton("検索");
+
+
+		Runnable searchRunner = () -> {
+			if(searchKeyword.getText().equals("")) return;
+			else if(!searchKeyword.getText().equals(lastKeyword))
+			{
+				imagePanel.removeAll();
+				this.revalidate();
+				apiRequester.reset();
+				apiRequester.setKeyword(searchKeyword.getText());
+				lastKeyword = searchKeyword.getText();
+				searchButton.setText("検索");
+			}
+
+			try {
+				searchButton.setEnabled(false);
+				apiRequester.request(downloader);
+				EventQueue.invokeLater(()-> {
+					searchButton.setText("次を検索");
+					originalSearchButtonText = searchButton.getText();
+				});
+			} catch (Exception ex) {
+				logger.write(ex);
+			}
+		};
+
 		searchButton.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				EventQueue.invokeLater(() -> {
-					try {
-						searchButton.setEnabled(false);
-						apiRequester.request(downloader);
-						EventQueue.invokeLater(()-> {
-							searchButton.setText("次を検索");
-						});
-					} catch (Exception ex) {
-						logger.write(ex);
-					}
-				});
+				EventQueue.invokeLater(searchRunner);
 			}
 		});
 
@@ -273,7 +314,13 @@ public class GoogleAPIImageSearchForm extends JFrame {
 			public void windowClosing(WindowEvent e){
 				EventQueue.invokeLater(() -> {
 					isClosed = true;
-					canselDownInvoker.get().run();
+					canselRequestInvoker.get().run();
+					try {
+						settings.save();
+					} catch (IOException ex) {
+						logger.write(ex);
+					}
+					if(downloader.getCounter().getCount() == 0) shutDownInvoker.run();
 					dispose();
 				});
 			}
@@ -282,6 +329,49 @@ public class GoogleAPIImageSearchForm extends JFrame {
 		headerPanel.add(searchButton);
 		searchButton.setPreferredSize(new Dimension(100, 24));
 
+		searchKeyword.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				setButtonText();
+			}
+
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				setButtonText();
+			}
+
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				setButtonText();
+			}
+
+			protected void setButtonText()
+			{
+				if(searchKeyword.getText().equals(lastKeyword))
+				{
+					EventQueue.invokeLater(() -> {
+						searchButton.setText(originalSearchButtonText);
+						GoogleAPIImageSearchForm.this.revalidate();
+					});
+				}
+				else
+				{
+					EventQueue.invokeLater(() -> {
+						searchButton.setText("検索");
+						GoogleAPIImageSearchForm.this.revalidate();
+					});
+				}
+			}
+		});
+
+		searchKeyword.addKeyListener(new KeyAdapter() {
+			public void keyPressed(KeyEvent e) {
+				if(e.getKeyCode() == KeyEvent.VK_ENTER)
+				{
+					EventQueue.invokeLater(searchRunner);
+				}
+			}
+		});
 		JButton canselButton = new JButton("検索を中止");
 
 		canselButton.addMouseListener(new MouseAdapter() {
@@ -309,6 +399,8 @@ public class GoogleAPIImageSearchForm extends JFrame {
 		JCheckBox enableSafeMode = new JCheckBox("セーフモード");
 
 		enableSafeMode.addChangeListener(e -> environment.setSafeMode(((JCheckBox)e.getSource()).isSelected()));
+
+		enableSafeMode.setSelected(environment.getSafeMode());
 
 		headerPanel.add(enableSafeMode);
 

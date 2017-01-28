@@ -37,7 +37,7 @@ bin
 *.log
 *.swp
 *.bak
-data
+images
 
 # settings
 settings.json

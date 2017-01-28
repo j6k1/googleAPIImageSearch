@@ -16,8 +16,7 @@ public class GoogleAPIImageSearchEnvironment implements IEnvironment {
 
 	@Override
 	public File getImagePath(String path, String filename) throws UnsupportedEncodingException {
-		File imagePath = new File(String.join(File.separator, new String[] { settings.getImageDataRootDir(), "data", "images", path, filename}));
-
+		File imagePath = new File(String.join(File.separator, new String[] { settings.getImageDataRootDir(), path, filename}));
 		if(imagePath.getAbsolutePath().getBytes("Shift_JIS").length > 256)
 		{
 			CRC32 crc32 = new CRC32();
@@ -43,6 +42,7 @@ public class GoogleAPIImageSearchEnvironment implements IEnvironment {
 	public void setSafeMode(boolean mode)
 	{
 		safeModeEnable = mode;
+		settings.setEnableSafeSearch(mode);
 	}
 
 	@Override
