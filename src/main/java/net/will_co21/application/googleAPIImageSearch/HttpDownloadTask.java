@@ -139,6 +139,7 @@ public class HttpDownloadTask implements IDownloadTask {
 			logger.write(e);
 		}
 		downloader.getCounter().countDown();
+		System.gc();
 	}
 
 	public synchronized void setOnSuccessListener(IOnHttpDownloadSuccessListener listener)
