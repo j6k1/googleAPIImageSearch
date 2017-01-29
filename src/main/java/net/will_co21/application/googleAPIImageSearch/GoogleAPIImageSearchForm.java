@@ -193,10 +193,6 @@ public class GoogleAPIImageSearchForm extends JFrame {
 
 		downloader = new HttpDownloadService(() -> {
 			onAPIRequesterRequestCompleted.run();
-			if(isClosed)
-			{
-				shutDownInvoker.run();
-			}
 		}, () -> {
 			onSearchRequestCancelled.run();
 		},
@@ -266,8 +262,14 @@ public class GoogleAPIImageSearchForm extends JFrame {
 		JButton searchButton = new JButton("検索");
 
 		onAPIRequesterRequestCompleted.setImplements(() -> {
-			searchButton.setEnabled(true);
-			apiRequester.onSearchRequestCompleted();
+			EventQueue.invokeLater(() -> {
+				searchButton.setEnabled(true);
+				apiRequester.onSearchRequestCompleted();
+				if(isClosed)
+				{
+					shutDownInvoker.run();
+				}
+			});
 		});
 
 		Runnable searchRunner = () -> {
@@ -303,7 +305,7 @@ public class GoogleAPIImageSearchForm extends JFrame {
 		});
 
 		onSearchRequestCancelled.setImplements(() -> {
-			searchButton.setEnabled(true);
+			EventQueue.invokeLater(() -> searchButton.setEnabled(true));
 		});
 
 		this.addWindowListener(new WindowAdapter() {
@@ -343,20 +345,18 @@ public class GoogleAPIImageSearchForm extends JFrame {
 
 			protected void setButtonText()
 			{
-				if(searchKeyword.getText().equals(lastKeyword))
-				{
-					EventQueue.invokeLater(() -> {
+				EventQueue.invokeLater(() -> {
+					if(searchKeyword.getText().equals(lastKeyword))
+					{
 						searchButton.setText(originalSearchButtonText);
 						GoogleAPIImageSearchForm.this.revalidate();
-					});
-				}
-				else
-				{
-					EventQueue.invokeLater(() -> {
+					}
+					else
+					{
 						searchButton.setText("検索");
 						GoogleAPIImageSearchForm.this.revalidate();
-					});
-				}
+					}
+				});
 			}
 		});
 
