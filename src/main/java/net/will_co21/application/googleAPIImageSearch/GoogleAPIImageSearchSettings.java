@@ -35,7 +35,7 @@ public class GoogleAPIImageSearchSettings implements ISettings {
 	public void save() throws IOException
 	{
 		try(FileOutputStream ostream = new FileOutputStream(jsonPath);
-			OutputStreamWriter swriter = new OutputStreamWriter(ostream,"UTF-8");
+			OutputStreamWriter swriter = new OutputStreamWriter(ostream, "UTF-8");
 			BufferedWriter writer = new BufferedWriter(swriter)) {
 
 			writer.write((new JsonObject(new JsonProperty[] {
