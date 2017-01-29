@@ -34,7 +34,9 @@ public class GoogleAPIImageSearchSettings implements ISettings {
 	@Override
 	public void save() throws IOException
 	{
-		try(BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(jsonPath),"UTF-8"))) {
+		try(FileOutputStream ostream = new FileOutputStream(jsonPath);
+			OutputStreamWriter swriter = new OutputStreamWriter(ostream,"UTF-8");
+			BufferedWriter writer = new BufferedWriter(swriter)) {
 
 			writer.write((new JsonObject(new JsonProperty[] {
 					JsonProperty.create("search", new JsonObject(new JsonProperty[] {
@@ -79,7 +81,8 @@ public class GoogleAPIImageSearchSettings implements ISettings {
 
 		LinkedList<String> lines = new LinkedList<String>();
 
-		try(BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(jsonPath),"UTF-8"))) {
+		try(FileInputStream fin = new FileInputStream(jsonPath);
+			BufferedReader reader = new BufferedReader(new InputStreamReader(fin,"UTF-8"))) {
 
 			String line;
 

@@ -80,6 +80,7 @@ public class GoogleAPIImageSearchForm extends JFrame {
 					frame.setVisible(true);
 				} catch (InvalidSettingException e) {
 					JOptionPane.showMessageDialog(frame, e.getMessage());
+					System.exit(ERROR);
 				} catch (Exception e) {
 					e.printStackTrace();
 					if(frame != null && frame.shutDownInvoker != null) frame.shutDownInvoker.runIfImplemented();
