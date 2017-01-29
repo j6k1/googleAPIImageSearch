@@ -37,7 +37,7 @@ public class HttpDownloadDelegate implements BiFunction<String, ILogger, Optiona
 				connection = (HttpURLConnection)url.openConnection();
 			}
 
-			connection.setConnectTimeout(3000);
+			connection.setConnectTimeout(6000);
 			connection.setRequestMethod("GET");
 			connection.connect();
 
