@@ -37,7 +37,7 @@ public class DirectoryCreator {
 
 		if(f.isDirectory()) return true;
 		else if(f.isFile()) throw new DirectoryCreateFailedException("ディレクトリ名と同名のファイル" + f.getAbsolutePath() + "が既に存在します。");
-		else if(f.exists()) throw new DirectoryCreateFailedException("指定されたパス上にディレクトリでもファイルでもない何かが存在します。 指定されたパス: " + f.getAbsolutePath());
+		else if(f.exists() && !f.isDirectory()) throw new DirectoryCreateFailedException("指定されたパス上にディレクトリでもファイルでもない何かが存在します。 指定されたパス: " + f.getAbsolutePath());
 		else if(maxdepth < depth)
 		{
 			throw new DirectoryCreateFailedException("ディレクトリ" + f.getAbsolutePath() + "が存在しません。");

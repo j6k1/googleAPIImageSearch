@@ -51,14 +51,8 @@ public class ResizedImageWriter {
 					{
 						if(canselStateReader.getAsBoolean())
 						{
-							if(path.isFile())
-							{
-								writer.endWriteSequence();
-								writer.dispose();
-								if(!path.delete()) logger.write(String.format("ファイル%sを削除できませんでした。", path.getAbsolutePath()));
-							}
-							reader.dispose();
-							writer.dispose();
+							writer.endWriteSequence();
+							error = true;
 							return Optional.empty();
 						}
 
