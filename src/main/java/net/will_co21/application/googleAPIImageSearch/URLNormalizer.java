@@ -1,11 +1,28 @@
 package net.will_co21.application.googleAPIImageSearch;
 
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class URLNormalizer {
 	protected String schemaPart;
 	protected String hostPart;
 	protected String pathPart;
+	protected static final Pattern htmlEntityPattern = Pattern.compile("&.+?;");
+	protected static final HashMap<String, String>  decodeEntityMap = new HashMap<String, String>() {/**
+		 *
+		 */
+		private static final long serialVersionUID = -4958869384991862743L;
+
+	{
+		put("&amp;", "&");
+		put("&lt;", "<");
+		put("&gt;", ">");
+		put("&quot;", "\"");
+		put("&apos;", "'");
+		put("&nbsp;", " ");
+	}};
 
 	public URLNormalizer(String baseUrl)
 	{
@@ -208,7 +225,7 @@ public class URLNormalizer {
 
 			if(startPosition == length)
 			{
-				return this.schemaPart + "://" + this.hostPart + this.pathPart + "/";
+				return decodeHtmlEntity(this.schemaPart + "://" + this.hostPart + this.pathPart + "/");
 			}
 			int queryStartPosition = url.indexOf('?');
 			int fragmentStartPosition = url.indexOf('#');
@@ -219,16 +236,16 @@ public class URLNormalizer {
 
 			if(pathEndPosition == length)
 			{
-				return this.schemaPart + "://" + this.hostPart +
+				return decodeHtmlEntity(this.schemaPart + "://" + this.hostPart +
 						normalizedPath(getPath(url)) +
-						(url.charAt(pathEndPosition - 1) == '/' ? "/" : "");
+						(url.charAt(pathEndPosition - 1) == '/' ? "/" : ""));
 			}
 			else
 			{
-				return this.schemaPart + "://" + this.hostPart +
+				return decodeHtmlEntity(this.schemaPart + "://" + this.hostPart +
 						normalizedPath(getPath(url)) +
 						(url.charAt(pathEndPosition - 1) == '/' ? "/" : "") +
-						url.substring(pathEndPosition, length);
+						url.substring(pathEndPosition, length));
 			}
 		}
 		else
@@ -242,18 +259,52 @@ public class URLNormalizer {
 
 			if(pathEndPosition == length)
 			{
-				return this.schemaPart + "://" + this.hostPart + this.pathPart +
+				return decodeHtmlEntity(this.schemaPart + "://" + this.hostPart + this.pathPart +
 						normalizedPath(getPath(url)) +
-						(pathEndPosition > 0 && url.charAt(pathEndPosition - 1) == '/' ? "/" : "");
+						(pathEndPosition > 0 && url.charAt(pathEndPosition - 1) == '/' ? "/" : ""));
 			}
 			else
 			{
-				return this.schemaPart + "://" + this.hostPart +
+				return decodeHtmlEntity(this.schemaPart + "://" + this.hostPart +
 						this.pathPart +
 						normalizedPath(getPath(url)) +
 						(pathEndPosition > 0 && url.charAt(pathEndPosition - 1) == '/' ? "/" : "") +
-						url.substring(pathEndPosition, length);
+						url.substring(pathEndPosition, length));
 			}
 		}
+	}
+
+	public static String decodeHtmlEntity(String url)
+	{
+		StringBuilder sb = new StringBuilder();
+
+		Matcher matcher = htmlEntityPattern.matcher(url);
+
+		int start = 0;
+
+		while(matcher.find())
+		{
+			if(matcher.start() > 0)
+			{
+				sb.append(url.substring(start, matcher.start()));
+			}
+
+			String entity = matcher.group();
+
+			if(decodeEntityMap.containsKey(entity))
+			{
+				sb.append(decodeEntityMap.get(entity));
+			}
+			else
+			{
+				sb.append(entity);
+			}
+
+			start = matcher.end();
+		}
+
+		if(start < url.length()) sb.append(url.substring(start, url.length()));
+
+		return sb.toString();
 	}
 }

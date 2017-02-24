@@ -65,7 +65,7 @@ public class HtmlParser implements IContentParser {
 		}
 		else if(matcher.group(6) != null)
 		{
-			return new URLToken(matcher.start(6), matcher.end(6), matcher.group(6));
+			return new URLToken(matcher.start(6), matcher.end(6), URLNormalizer.decodeHtmlEntity(matcher.group(6)));
 		}
 		else
 		{

@@ -22,6 +22,8 @@ public class HttpDownloadService implements IDownloadService {
 	protected ISettings settings;
 	protected volatile boolean cancelled = false;;
 	protected volatile HashSet<String> alreadyDownloads;
+	protected volatile boolean working = false;
+	protected final ExecutorService taskExecutor;
 
 	public HttpDownloadService(IOnSearchRequestCompleted onCompleted, IOnSearchRequestCancelled onCancelled,
 			IImageReader imageReader, ISwingLogPrinter logPrinter, ILogger logger,
@@ -37,6 +39,24 @@ public class HttpDownloadService implements IDownloadService {
 		this.environment = environment;
 		this.settings = settings;
 		this.alreadyDownloads = new HashSet<String>();
+
+		taskExecutor = Executors.newSingleThreadExecutor();
+
+		working = true;
+
+		taskExecutor.submit(() -> {
+			while(working)
+			{
+				IDownloadTask task = null;
+
+				while(working && this.counter.getCount() <= 16 && (task = this.tasks.pollFirst()) != null)
+				{
+					this.counter.countUp();
+
+					this.httpDownloadExecutor.submit(task);
+				}
+			}
+		});
 	}
 
 	@Override
@@ -72,10 +92,6 @@ public class HttpDownloadService implements IDownloadService {
 															this.environment, this.settings);
 
 			this.tasks.offerLast(task);
-
-			this.counter.countUp();
-
-			this.httpDownloadExecutor.submit(task);
 		});
 	}
 
@@ -99,7 +115,9 @@ public class HttpDownloadService implements IDownloadService {
 	@Override
 	public void shutdown()
 	{
+		working = false;
 		this.httpDownloadExecutor.shutdown();
+		this.taskExecutor.shutdown();
 	}
 
 	@Override
