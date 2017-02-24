@@ -55,6 +55,12 @@ public class HttpDownloadService implements IDownloadService {
 
 					this.httpDownloadExecutor.submit(task);
 				}
+
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 			}
 		});
 	}
