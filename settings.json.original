@@ -1,0 +1,16 @@
+{
+    "apikeys": {
+        "path": "apikeys.json"
+    },
+    "imageDir": "images",
+    "images": {
+        "resize": {
+            "height": 800,
+            "width": 1000
+        }
+    },
+    "search": {
+        "maxdepth": 3,
+        "safesearch": false
+    }
+}
