@@ -49,7 +49,7 @@ public class HttpDownloadService implements IDownloadService {
 			{
 				IDownloadTask task = null;
 
-				while(working && this.counter.getCount() <= 16 && (task = this.tasks.pollFirst()) != null)
+				while(working && this.counter.getCount() < 16 && (task = this.tasks.pollFirst()) != null)
 				{
 					this.counter.countUp();
 
