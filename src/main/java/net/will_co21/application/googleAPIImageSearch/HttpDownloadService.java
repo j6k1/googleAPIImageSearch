@@ -8,8 +8,6 @@ import java.util.LinkedList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.sun.org.apache.xalan.internal.xsltc.compiler.sym;
-
 public class HttpDownloadService implements IDownloadService {
 	protected volatile ExecutorService httpDownloadExecutor;
 	protected volatile LinkedList<IDownloadTask> tasks;

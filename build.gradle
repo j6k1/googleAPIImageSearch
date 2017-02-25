@@ -19,17 +19,13 @@
 apply plugin: 'java'
 apply plugin: 'maven'
 
-group = 'net.will_co21.googleAPIImageSearch'
+group = 'net.will_co21.application.googleAPIImageSearch'
 version = '0.0.1-SNAPSHOT'
 
 description = """"""
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
-
-dependencies {
-	testCompile 'junit:junit:4.+'
-}
 
 tasks.withType(JavaCompile) {
 	options.encoding = 'UTF-8'
@@ -52,20 +48,7 @@ dependencies {
     // TestNG is also supported by the Gradle Test task. Just change the
     // testCompile dependency to testCompile 'org.testng:testng:6.8.1' and add
     // 'test.useTestNG()' to your build script.
-    testCompile 'junit:junit:4.12'
-    compile fileTree(dir: './lib', includes: ['*.jar'])
-}
-
-// In this section you declare the dependencies for your production and test code
-dependencies {
-    // The production code uses the SLF4J logging API at compile time
-    compile 'org.slf4j:slf4j-api:1.7.21'
-
-    // Declare the dependency for your favourite test framework you want to use in your tests.
-    // TestNG is also supported by the Gradle Test task. Just change the
-    // testCompile dependency to testCompile 'org.testng:testng:6.8.1' and add
-    // 'test.useTestNG()' to your build script.
-    testCompile 'junit:junit:4.12'
+	testCompile 'junit:junit:4.+'
     compile fileTree(dir: './lib', includes: ['*.jar'])
 }
  jar {

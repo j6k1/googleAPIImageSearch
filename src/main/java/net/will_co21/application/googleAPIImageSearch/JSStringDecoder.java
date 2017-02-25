@@ -41,7 +41,7 @@ public class JSStringDecoder {
 
 		char c = textChars[index];
 
-		if(c != '"' && c!= '\'') throw new RuntimeException("the position of input is illegal.");
+		if(c != '"' && c!= '\'') throw new JSStringFormatErrorException("the position of input is illegal.");
 
 		char quote = c;
 
@@ -52,7 +52,7 @@ public class JSStringDecoder {
 			return new Pair<Result<String, Exception>, Integer>(
 					Result.error(
 						new JSStringFormatErrorException(
-								"The format of this json string is not an json string format."),
+								"The format of this js string is not an js string format."),
 							String.class),
 					length);
 		}
@@ -71,7 +71,7 @@ public class JSStringDecoder {
 
 				if(index == length) return new Pair<Result<String, Exception>, Integer>(
 											Result.error(new JSStringFormatErrorException(
-												"The format of this json string is not an json string format."),
+												"The format of this js string is not an js string format."),
 											String.class),
 											findStringEndNextPosition(text, index, quote));
 
@@ -79,9 +79,9 @@ public class JSStringDecoder {
 
 				if(c == 'x')
 				{
-					if(index + 2 >= length) new Pair<Result<String, Exception>, Integer>(
+					if(index + 2 >= length) return new Pair<Result<String, Exception>, Integer>(
 												Result.error(new JSStringFormatErrorException(
-													"The format of this json string is not an json string format.")
+													"The format of this js string is not an js string format.")
 												, String.class),
 												findStringEndNextPosition(text, index, quote));
 
@@ -93,7 +93,7 @@ public class JSStringDecoder {
 					{
 						c = textChars[hexpos];
 
-						if((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F')) hexpos++;
+						if((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f')) hexpos++;
 						else return new Pair<Result<String, Exception>, Integer>(
 								Result.error(new JSStringFormatErrorException(
 									"unexpected character \"" + c + "\" was found."
@@ -106,6 +106,7 @@ public class JSStringDecoder {
 					sb.append((char)code);
 					index += 2;
 
+					currentStart = index;
 				}
 				else if(c == 'u' && index + 1 < length && textChars[index + 1] == '{')
 				{
@@ -115,7 +116,7 @@ public class JSStringDecoder {
 					{
 						return new Pair<Result<String, Exception>, Integer>(
 								Result.error(new JSStringFormatErrorException(
-									"unexpected character \"" + c + "\" was found."
+										"The format of this js string is not an js string format."
 								), String.class)
 								, findStringEndNextPosition(text, index, quote));
 					}
@@ -127,8 +128,8 @@ public class JSStringDecoder {
 					{
 						c = textChars[hexpos];
 
-						if((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F')) hexpos++;
-						else  new Pair<Result<String, Exception>, Integer>(
+						if((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f')) hexpos++;
+						else return new Pair<Result<String, Exception>, Integer>(
 								Result.error(new JSStringFormatErrorException(
 									"unexpected character \"" + c + "\" was found."
 								), String.class)
@@ -143,17 +144,21 @@ public class JSStringDecoder {
 					}
 					else
 					{
+						code = code - 0x10000;
+
 						int firstCode = code / 0x400 + 0xD800;
 						int secondCode = (code % 0x400) + 0xDC00;
 						sb.append(new String(new char[] { (char)firstCode, (char)secondCode }));
 					}
 					index = codeEndMarkIndex + 1;
+
+					currentStart = index;
 				}
 				else if(c == 'u')
 				{
 					if(index + 4 >= length) return new Pair<Result<String, Exception>, Integer>(
 												Result.error(new JSStringFormatErrorException(
-														"unexpected character \"" + c + "\" was found."
+														"The format of this js string is not an js string format."
 													), String.class)
 												, findStringEndNextPosition(text, index, quote));
 
@@ -165,7 +170,7 @@ public class JSStringDecoder {
 					{
 						c = textChars[hexpos];
 
-						if((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F')) hexpos++;
+						if((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f')) hexpos++;
 						else  return new Pair<Result<String, Exception>, Integer>(
 								Result.error(new JSStringFormatErrorException(
 									"unexpected character \"" + c + "\" was found."
@@ -190,9 +195,9 @@ public class JSStringDecoder {
 						index += 6;
 
 						if(index + 3 >= length)
-							new Pair<Result<String, Exception>, Integer>(
+							return new Pair<Result<String, Exception>, Integer>(
 									Result.error(new JSStringFormatErrorException(
-										"The format of this json string is not an json string format.")
+										"The format of this js string is not an js string format.")
 									, String.class)
 									, findStringEndNextPosition(text, index, quote));
 
@@ -204,8 +209,8 @@ public class JSStringDecoder {
 						{
 							c = textChars[hexpos];
 
-							if((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F')) hexpos++;
-							else  new Pair<Result<String, Exception>, Integer>(
+							if((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f')) hexpos++;
+							else  return new Pair<Result<String, Exception>, Integer>(
 									Result.error(new JSStringFormatErrorException(
 										"unexpected character \"" + c + "\" was found."
 									), String.class)
@@ -257,15 +262,15 @@ public class JSStringDecoder {
 
 		if(currentStart < index) sb.append(text.substring(currentStart, index));
 
-		if(index == length)  new Pair<Result<String, Exception>, Integer>(
+		if(index == length)  return new Pair<Result<String, Exception>, Integer>(
 								Result.error(new JSStringFormatErrorException(
-									"The format of this json string is not an json string format."),
+									"The format of this js string is not an js string format."),
 								String.class)
 								, findStringEndNextPosition(text, index, quote));
 
 		c = textChars[index];
 
-		if(c != quote) new Pair<Result<String, Exception>, Integer>(
+		if(c != quote) return new Pair<Result<String, Exception>, Integer>(
 						Result.error(new JSStringFormatErrorException(
 							"unexpected character \"" + c + "\" was found."
 						), String.class)

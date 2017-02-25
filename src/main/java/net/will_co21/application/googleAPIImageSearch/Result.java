@@ -41,4 +41,29 @@ public class Result<T, E extends Exception> {
 	{
 		return result.isPresent();
 	}
+
+	@Override
+	public boolean equals(Object o)
+	{
+		if(!(o instanceof Result)) return false;
+		else if(this.result.isPresent() && ((Result)o).result.isPresent())
+		{
+			return this.result.get().equals(((Result)o).result.get());
+		}
+		else if(((Result)o).error.isPresent())
+		{
+			return this.error.get().equals(((Result)o).error.get());
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	@Override
+	public String toString()
+	{
+		if(result.isPresent()) return "result: " + result.get().toString();
+		else return "error: " + error.get().getMessage();
+	}
 }
