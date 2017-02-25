@@ -13,6 +13,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.LinkedList;
 import java.util.function.Consumer;
 
+import net.will_co21.format.json.JsonBoolean;
 import net.will_co21.format.json.JsonFormatErrorException;
 import net.will_co21.format.json.JsonObject;
 import net.will_co21.format.json.JsonParser;
@@ -33,6 +34,7 @@ public class GoogleAPIImageSearchSettings implements ISettings {
 	protected String engineId;
 	protected LoggingMode loggingMode;
 	protected String logFilePath;
+	protected boolean isAppendLogging;
 
 	@Override
 	public void save() throws IOException
@@ -58,7 +60,8 @@ public class GoogleAPIImageSearchSettings implements ISettings {
 					})),
 					JsonProperty.create("logging", new JsonObject(new JsonProperty[] {
 							JsonProperty.create("mode", (loggingMode == LoggingMode.conole ? "console" : "file")),
-							JsonProperty.create("savepath", logFilePath)
+							JsonProperty.create("savepath", logFilePath),
+							JsonProperty.create("append", isAppendLogging)
 					}))
 			})).toPrettyJson());
 
@@ -80,6 +83,7 @@ public class GoogleAPIImageSearchSettings implements ISettings {
 			apiKeysPath = "apikeys.json";
 			loggingMode = LoggingMode.conole;
 			logFilePath = "";
+			isAppendLogging = false;
 
 			save();
 
@@ -124,6 +128,10 @@ public class GoogleAPIImageSearchSettings implements ISettings {
 							.orElse(new JsonObject())
 							.getOptional("savepath").orElse(new JsonString(""))
 							.getString();
+			isAppendLogging = jobj.getOptional("logging")
+								.orElse(new JsonObject())
+								.getOptional("append").orElse(new JsonBoolean(false))
+								.getBoolean();
 			if(loggingMode == LoggingMode.file && logFilePath.equals("")) logFilePath = "application.log";
 		} catch (KeyNotFoundException e) {
 			throw new InvalidSettingException("jsonファイルの形式が不正です。");
@@ -252,5 +260,11 @@ public class GoogleAPIImageSearchSettings implements ISettings {
 	public LoggingMode getLoggingMode()
 	{
 		return loggingMode;
+	}
+
+	@Override
+	public boolean getIsAppendLogging()
+	{
+		return isAppendLogging;
 	}
 }

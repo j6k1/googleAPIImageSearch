@@ -7,15 +7,19 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class FileLogger implements IClosableWriter {
 	protected FileOutputStream ostream;
 	protected OutputStreamWriter swriter;
 	protected BufferedWriter writer;
+	protected DateTimeFormatter dff;
 
-	public FileLogger(File savePath) throws FileNotFoundException, UnsupportedEncodingException
+	public FileLogger(File savePath, boolean append) throws FileNotFoundException, UnsupportedEncodingException
 	{
-		ostream = new FileOutputStream(savePath);
+		dff = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss.SSS");
+		ostream = new FileOutputStream(savePath, append);
 		swriter = new OutputStreamWriter(ostream, "UTF-8");
 		writer = new BufferedWriter(swriter);
 	}
@@ -24,7 +28,7 @@ public class FileLogger implements IClosableWriter {
 	public void write(String str)
 	{
 		try {
-			writer.write(str + "\n");
+			writer.write(dff.format(LocalDateTime.now()) + ": " + str + "\n");
 			writer.flush();
 		} catch (IOException e) {
 			e.printStackTrace();

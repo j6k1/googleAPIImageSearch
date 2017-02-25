@@ -34,7 +34,11 @@ public class LoggingWorker implements Runnable {
 
 			while((message = messages.pollFirst()) != null)
 			{
-				this.writer.write(message);
+				try {
+					this.writer.write(message);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
 
 			try {

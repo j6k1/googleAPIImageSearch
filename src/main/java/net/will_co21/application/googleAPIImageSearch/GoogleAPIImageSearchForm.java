@@ -164,7 +164,8 @@ public class GoogleAPIImageSearchForm extends JFrame {
 
 		if(settings.getLoggingMode() == LoggingMode.file)
 		{
-			loggingWorker = new LoggingWorker(new FileLogger(new File(settings.getLogFilePath())));
+			loggingWorker = new LoggingWorker(new FileLogger(new File(settings.getLogFilePath()),
+												settings.getIsAppendLogging()));
 		}
 		else
 		{

@@ -17,4 +17,5 @@ public interface ISettings {
 	public String getEngineId();
 	public LoggingMode getLoggingMode();
 	public String getLogFilePath();
+	public boolean getIsAppendLogging();
 }
