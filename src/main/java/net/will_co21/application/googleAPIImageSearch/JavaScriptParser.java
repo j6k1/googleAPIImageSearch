@@ -41,7 +41,7 @@ public class JavaScriptParser implements IContentParser {
 		{
 			StringBuilder sb = new StringBuilder();
 
-			Pair<Optional<String>, Integer> pair;
+			Pair<Result<String, Exception>, Integer> pair;
 
 			pair = JSStringDecoder.decode(text, textChars, position);
 
@@ -49,8 +49,8 @@ public class JavaScriptParser implements IContentParser {
 
 			boolean foundNewLine = false;
 
-			if(!pair.fst.isPresent()) hasError = true;
-			else pair.fst.ifPresent((str) -> sb.append(str));
+			if(!pair.fst.hasResult()) hasError = true;
+			else pair.fst.ifHasResult((str) -> sb.append(str));
 
 			position = pair.snd;
 
@@ -111,14 +111,14 @@ public class JavaScriptParser implements IContentParser {
 					{
 						pair = JSStringDecoder.decode(text, textChars, position);
 
-						if(!pair.fst.isPresent())
+						if(!pair.fst.hasResult())
 						{
 							hasError = true;
 							position = pair.snd;
 						}
 						else
 						{
-							pair.fst.ifPresent((str) -> sb.append(str));
+							pair.fst.ifHasResult((str) -> sb.append(str));
 							position = pair.snd;
 						}
 					}

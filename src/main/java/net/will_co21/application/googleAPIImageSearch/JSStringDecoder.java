@@ -34,7 +34,7 @@ public class JSStringDecoder {
 					Math.min((lfPosition == -1 ? length : lfPosition + 1), (crPosition == -1 ? length : crPosition + 1)));
 	}
 
-	public static Pair<Optional<String>, Integer> decode(String text, char[] textChars, int start) {
+	public static Pair<Result<String, Exception>, Integer> decode(String text, char[] textChars, int start) {
 		int index = start;
 		int currentStart = index;
 		int length = text.length();
@@ -47,7 +47,15 @@ public class JSStringDecoder {
 
 		index++;
 
-		if(index == length) return new Pair<Optional<String>, Integer>(Optional.empty(), length);
+		if(index == length)
+		{
+			return new Pair<Result<String, Exception>, Integer>(
+					Result.error(
+						new JSStringFormatErrorException(
+								"The format of this json string is not an json string format."),
+							String.class),
+					length);
+		}
 
 		currentStart++;
 
@@ -61,13 +69,21 @@ public class JSStringDecoder {
 
 				index++;
 
-				if(index == length) return new Pair<Optional<String>, Integer>(Optional.empty(), findStringEndNextPosition(text, index, quote));
+				if(index == length) return new Pair<Result<String, Exception>, Integer>(
+											Result.error(new JSStringFormatErrorException(
+												"The format of this json string is not an json string format."),
+											String.class),
+											findStringEndNextPosition(text, index, quote));
 
 				c = textChars[index];
 
 				if(c == 'x')
 				{
-					if(index + 2 >= length) new Pair<Optional<String>, Integer>(Optional.empty(), findStringEndNextPosition(text, index, quote));
+					if(index + 2 >= length) new Pair<Result<String, Exception>, Integer>(
+												Result.error(new JSStringFormatErrorException(
+													"The format of this json string is not an json string format.")
+												, String.class),
+												findStringEndNextPosition(text, index, quote));
 
 					index++;
 
@@ -78,7 +94,11 @@ public class JSStringDecoder {
 						c = textChars[hexpos];
 
 						if((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F')) hexpos++;
-						else return new Pair<Optional<String>, Integer>(Optional.empty(), findStringEndNextPosition(text, index, quote));
+						else return new Pair<Result<String, Exception>, Integer>(
+								Result.error(new JSStringFormatErrorException(
+									"unexpected character \"" + c + "\" was found."
+								), String.class)
+								, findStringEndNextPosition(text, index, quote));
 					}
 
 					int code = Integer.parseInt(text.substring(index, index + 2), 16);
@@ -93,7 +113,11 @@ public class JSStringDecoder {
 
 					if(codeEndMarkIndex == -1 || codeEndMarkIndex == index + 2 || codeEndMarkIndex > index + 8)
 					{
-						return new Pair<Optional<String>, Integer>(Optional.empty(), findStringEndNextPosition(text, index, quote));
+						return new Pair<Result<String, Exception>, Integer>(
+								Result.error(new JSStringFormatErrorException(
+									"unexpected character \"" + c + "\" was found."
+								), String.class)
+								, findStringEndNextPosition(text, index, quote));
 					}
 					index += 2;
 
@@ -104,7 +128,11 @@ public class JSStringDecoder {
 						c = textChars[hexpos];
 
 						if((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F')) hexpos++;
-						else  new Pair<Optional<String>, Integer>(Optional.empty(), findStringEndNextPosition(text, index, quote));
+						else  new Pair<Result<String, Exception>, Integer>(
+								Result.error(new JSStringFormatErrorException(
+									"unexpected character \"" + c + "\" was found."
+								), String.class)
+								, findStringEndNextPosition(text, index, quote));
 					}
 
 					int code = Integer.parseInt(text.substring(index, codeEndMarkIndex), 16);
@@ -123,7 +151,11 @@ public class JSStringDecoder {
 				}
 				else if(c == 'u')
 				{
-					if(index + 4 >= length) return new Pair<Optional<String>, Integer>(Optional.empty(), findStringEndNextPosition(text, index, quote));
+					if(index + 4 >= length) return new Pair<Result<String, Exception>, Integer>(
+												Result.error(new JSStringFormatErrorException(
+														"unexpected character \"" + c + "\" was found."
+													), String.class)
+												, findStringEndNextPosition(text, index, quote));
 
 					index++;
 
@@ -134,7 +166,11 @@ public class JSStringDecoder {
 						c = textChars[hexpos];
 
 						if((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F')) hexpos++;
-						else  return new Pair<Optional<String>, Integer>(Optional.empty(), findStringEndNextPosition(text, index, quote));
+						else  return new Pair<Result<String, Exception>, Integer>(
+								Result.error(new JSStringFormatErrorException(
+									"unexpected character \"" + c + "\" was found."
+								), String.class)
+								, findStringEndNextPosition(text, index, quote));
 					}
 
 					int code = Integer.parseInt(text.substring(index, index + 4), 16);
@@ -154,7 +190,11 @@ public class JSStringDecoder {
 						index += 6;
 
 						if(index + 3 >= length)
-							new Pair<Optional<String>, Integer>(Optional.empty(), findStringEndNextPosition(text, index, quote));
+							new Pair<Result<String, Exception>, Integer>(
+									Result.error(new JSStringFormatErrorException(
+										"The format of this json string is not an json string format.")
+									, String.class)
+									, findStringEndNextPosition(text, index, quote));
 
 						c = textChars[index];
 
@@ -165,7 +205,11 @@ public class JSStringDecoder {
 							c = textChars[hexpos];
 
 							if((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F')) hexpos++;
-							else  new Pair<Optional<String>, Integer>(Optional.empty(), findStringEndNextPosition(text, index, quote));
+							else  new Pair<Result<String, Exception>, Integer>(
+									Result.error(new JSStringFormatErrorException(
+										"unexpected character \"" + c + "\" was found."
+									), String.class)
+									, findStringEndNextPosition(text, index, quote));
 						}
 
 						int secondCode = Integer.parseInt(text.substring(index, index + 4), 16);
@@ -198,7 +242,11 @@ public class JSStringDecoder {
 				}
 				else
 				{
-					 return new Pair<Optional<String>, Integer>(Optional.empty(), findStringEndNextPosition(text, index, quote));
+					 return new Pair<Result<String, Exception>, Integer>(
+								Result.error(new JSStringFormatErrorException(
+									"unexpected character \"" + c + "\" was found."
+								), String.class)
+							 , findStringEndNextPosition(text, index, quote));
 				}
 			}
 			else
@@ -209,15 +257,23 @@ public class JSStringDecoder {
 
 		if(currentStart < index) sb.append(text.substring(currentStart, index));
 
-		if(index == length)  new Pair<Optional<String>, Integer>(Optional.empty(), findStringEndNextPosition(text, index, quote));
+		if(index == length)  new Pair<Result<String, Exception>, Integer>(
+								Result.error(new JSStringFormatErrorException(
+									"The format of this json string is not an json string format."),
+								String.class)
+								, findStringEndNextPosition(text, index, quote));
 
 		c = textChars[index];
 
-		if(c != quote) new Pair<Optional<String>, Integer>(Optional.empty(), findStringEndNextPosition(text, index, quote));
+		if(c != quote) new Pair<Result<String, Exception>, Integer>(
+						Result.error(new JSStringFormatErrorException(
+							"unexpected character \"" + c + "\" was found."
+						), String.class)
+						, findStringEndNextPosition(text, index, quote));
 
 		index++;
 
-		return new Pair<Optional<String>, Integer>(Optional.of(sb.toString()), index);
+		return new Pair<Result<String, Exception>, Integer>(Result.of(sb.toString()), index);
 	}
 
 }

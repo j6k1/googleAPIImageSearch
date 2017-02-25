@@ -20,11 +20,11 @@ public class Result<T, E extends Exception> {
 		return new Result<T, Exception>(Optional.of(result), Optional.empty());
 	}
 
-	public static <E extends Exception> Result<Object, E> error(E error)
+	public static <T, E extends Exception> Result<T, E> error(E error, Class<T> klass)
 	{
 		if(error == null) throw new NullValueNotAllowedException("Null value was passed as a error value for the Result object.");
 
-		return new Result<Object, E>(Optional.empty(), Optional.of(error));
+		return new Result<T, E>(Optional.empty(), Optional.of(error));
 	}
 
 	public void throwIfError() throws E
@@ -35,5 +35,10 @@ public class Result<T, E extends Exception> {
 	public void ifHasResult(Consumer<T> callback)
 	{
 		result.ifPresent(callback);
+	}
+
+	public boolean hasResult()
+	{
+		return result.isPresent();
 	}
 }
