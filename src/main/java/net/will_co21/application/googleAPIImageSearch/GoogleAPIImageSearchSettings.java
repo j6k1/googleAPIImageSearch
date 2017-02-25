@@ -17,6 +17,7 @@ import net.will_co21.format.json.JsonFormatErrorException;
 import net.will_co21.format.json.JsonObject;
 import net.will_co21.format.json.JsonParser;
 import net.will_co21.format.json.JsonProperty;
+import net.will_co21.format.json.JsonString;
 import net.will_co21.format.json.KeyNotFoundException;
 import net.will_co21.format.json.NotSupportedMethodException;
 
@@ -30,6 +31,8 @@ public class GoogleAPIImageSearchSettings implements ISettings {
 	protected String apiKeysPath;
 	protected String apiKey;
 	protected String engineId;
+	protected LoggingMode loggingMode;
+	protected String logFilePath;
 
 	@Override
 	public void save() throws IOException
@@ -52,6 +55,10 @@ public class GoogleAPIImageSearchSettings implements ISettings {
 					JsonProperty.create("imageDir", imageDataRootDir),
 					JsonProperty.create("apikeys", new JsonObject(new JsonProperty[] {
 							JsonProperty.create("path", apiKeysPath)
+					})),
+					JsonProperty.create("logging", new JsonObject(new JsonProperty[] {
+							JsonProperty.create("mode", (loggingMode == LoggingMode.conole ? "console" : "file")),
+							JsonProperty.create("savepath", logFilePath)
 					}))
 			})).toPrettyJson());
 
@@ -71,6 +78,8 @@ public class GoogleAPIImageSearchSettings implements ISettings {
 			resizedImageHeight = 800;
 			imageDataRootDir = "images";
 			apiKeysPath = "apikeys.json";
+			loggingMode = LoggingMode.conole;
+			logFilePath = "";
 
 			save();
 
@@ -107,6 +116,15 @@ public class GoogleAPIImageSearchSettings implements ISettings {
 			resizedImageHeight = jobj.get("images").get("resize").get("height").getInt();
 			imageDataRootDir = jobj.get("imageDir").getString();
 			apiKeysPath = jobj.get("apikeys").get("path").getString();
+			loggingMode = LoggingMode.parse(jobj.getOptional("logging")
+											.orElse(new JsonObject())
+											.getOptional("mode").orElse(new JsonString("console"))
+											.getString());
+			logFilePath = jobj.getOptional("logging")
+							.orElse(new JsonObject())
+							.getOptional("savepath").orElse(new JsonString(""))
+							.getString();
+			if(loggingMode == LoggingMode.file && logFilePath.equals("")) logFilePath = "application.log";
 		} catch (KeyNotFoundException e) {
 			throw new InvalidSettingException("jsonファイルの形式が不正です。");
 		} catch (NotSupportedMethodException e) {
@@ -152,10 +170,21 @@ public class GoogleAPIImageSearchSettings implements ISettings {
 	public boolean validate()
 	{
 		File f = new File(this.getImageDataRootDir());
+		File logFile = (new File(logFilePath));
+
 		if(f.isFile()) throw new InvalidSettingException("画像の保存先として指定されたディレクトリと同名のファイル" + f.getAbsolutePath() + "が既に存在します。");
 		else if(f.isDirectory()) {}
 		else if(f.exists())  throw new InvalidSettingException("画像の保存先として指定されたパスにファイルでもディレクトリでもない何かが存在します。");
 		else throw new InvalidSettingException("画像の保存先として指定されたディレクトリが存在しません。");
+
+		if(loggingMode == LoggingMode.file)
+		{
+			try {
+				if(!logFile.exists()) logFile.createNewFile();
+			} catch (IOException e) {
+				throw new InvalidSettingException("ログの保存先として指定されたファイルを作成できませんでした。");
+			}
+		}
 
 		return true;
 	}
@@ -211,5 +240,17 @@ public class GoogleAPIImageSearchSettings implements ISettings {
 	public String getEngineId()
 	{
 		return engineId;
+	}
+
+	@Override
+	public String getLogFilePath()
+	{
+		return logFilePath;
+	}
+
+	@Override
+	public LoggingMode getLoggingMode()
+	{
+		return loggingMode;
 	}
 }

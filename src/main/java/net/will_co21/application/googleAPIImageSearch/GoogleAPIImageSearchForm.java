@@ -160,7 +160,16 @@ public class GoogleAPIImageSearchForm extends JFrame {
 		RunnerApplicative onAPIRequesterRequestCompleted = new RunnerApplicative();
 		loggingExecutor = Executors.newSingleThreadExecutor();
 
-		LoggingWorker loggingWorker = new LoggingWorker(new ConsoleLogger());
+		LoggingWorker loggingWorker;
+
+		if(settings.getLoggingMode() == LoggingMode.file)
+		{
+			loggingWorker = new LoggingWorker(new FileLogger(new File(settings.getLogFilePath())));
+		}
+		else
+		{
+			loggingWorker = new LoggingWorker(new ConsoleLogger());
+		}
 
 		loggingExecutor.submit(loggingWorker);
 

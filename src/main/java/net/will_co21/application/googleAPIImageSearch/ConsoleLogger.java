@@ -1,11 +1,15 @@
 package net.will_co21.application.googleAPIImageSearch;
 
-import java.util.function.Consumer;
-
-public class ConsoleLogger implements Consumer<String> {
+public class ConsoleLogger implements IClosableWriter {
 
 	@Override
-	public void accept(String str) {
+	public void write(String str) {
 		System.out.println(str);
+	}
+
+	@Override
+	public void close()
+	{
+
 	}
 }

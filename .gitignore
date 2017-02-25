@@ -42,3 +42,6 @@ images
 # settings
 settings.json
 apikeys.json
+
+# log
+application.log

@@ -5,11 +5,11 @@ import java.util.concurrent.ThreadFactory;
 import java.util.function.Consumer;
 
 public class LoggingWorker implements Runnable {
-	protected Consumer<String> writer;
+	protected IClosableWriter writer;
 	protected volatile boolean working;
 	protected volatile LinkedList<String> messages;
 
-	public LoggingWorker(Consumer<String> writer)
+	public LoggingWorker(IClosableWriter writer)
 	{
 		this.writer = writer;
 		this.working = true;
@@ -34,7 +34,7 @@ public class LoggingWorker implements Runnable {
 
 			while((message = messages.pollFirst()) != null)
 			{
-				this.writer.accept(message);
+				this.writer.write(message);
 			}
 
 			try {

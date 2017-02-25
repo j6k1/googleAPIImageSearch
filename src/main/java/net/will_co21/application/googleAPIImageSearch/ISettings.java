@@ -15,4 +15,6 @@ public interface ISettings {
 	public void setEnableSafeSearch(boolean b);
 	public String getAPIKey();
 	public String getEngineId();
+	public LoggingMode getLoggingMode();
+	public String getLogFilePath();
 }
