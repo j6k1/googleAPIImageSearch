@@ -47,5 +47,7 @@ public class LoggingWorker implements Runnable {
 				e.printStackTrace();
 			}
 		}
+
+		this.writer.close();
 	}
 }
