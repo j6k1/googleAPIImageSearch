@@ -9,6 +9,11 @@
             "width": 1000
         }
     },
+     "logging": {
+        "append": false,
+        "mode": "console",
+        "savepath": ""
+    },
     "search": {
         "maxdepth": 3,
         "safesearch": false
