@@ -7,6 +7,4 @@ public interface IEnvironment {
 	public File getImagePath(String path, String filename) throws UnsupportedEncodingException;
 	public void setSafeMode(boolean mode);
 	public boolean getSafeMode();
-	public void setSearchMode(SearchMode mode);
-	public SearchMode getSearchMode();
 }

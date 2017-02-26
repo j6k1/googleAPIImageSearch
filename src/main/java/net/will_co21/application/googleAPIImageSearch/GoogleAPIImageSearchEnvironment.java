@@ -6,7 +6,6 @@ import java.util.zip.CRC32;
 
 public class GoogleAPIImageSearchEnvironment implements IEnvironment {
 	protected boolean safeModeEnable = false;
-	protected SearchMode searchMode = SearchMode.apiSearch;
 	protected ISettings settings;
 
 	public GoogleAPIImageSearchEnvironment(ISettings settings)
@@ -51,15 +50,4 @@ public class GoogleAPIImageSearchEnvironment implements IEnvironment {
 		return safeModeEnable;
 	}
 
-	@Override
-	public void setSearchMode(SearchMode mode)
-	{
-		searchMode = mode;
-	}
-
-	@Override
-	public SearchMode getSearchMode()
-	{
-		return searchMode;
-	}
 }

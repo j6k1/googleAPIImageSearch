@@ -129,7 +129,7 @@ public class GoogleAPIImageSearchForm extends JFrame {
 
 		searchKeyword = new JTextField();
 		searchKeyword.setToolTipText("検索するキーワードを入力してください...");
-		searchKeyword.setColumns(38);
+		searchKeyword.setColumns(48);
 		headerPanel.add(searchKeyword);
 		JPanel logPanel = new JPanel();
 		FlowLayout flowLayout = (FlowLayout) logPanel.getLayout();
@@ -403,12 +403,6 @@ public class GoogleAPIImageSearchForm extends JFrame {
 		});
 
 		headerPanel.add(canselButton);
-		JCheckBox enableLocalSearch = new JCheckBox("ローカルを検索");
-		headerPanel.add(enableLocalSearch);
-
-		enableLocalSearch.addChangeListener(e -> {
-			environment.setSearchMode(((((JCheckBox)e.getSource()).isSelected() ? SearchMode.localSearch : SearchMode.apiSearch)));
-		});
 
 		JCheckBox enableSafeMode = new JCheckBox("セーフモード");
 
