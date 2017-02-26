@@ -98,6 +98,7 @@ public class GoogleAPIImageSearchForm extends JFrame {
 	 * @throws UnsupportedEncodingException
 	 */
 	public GoogleAPIImageSearchForm() throws UnsupportedEncodingException, FileNotFoundException, IOException {
+		setTitle("google api image search");
 		try {
 			UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
 			SwingUtilities.updateComponentTreeUI(this);
