@@ -6,19 +6,28 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.net.URLEncoder;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
+
+import javax.swing.JOptionPane;
 
 import net.will_co21.format.json.JsonArray;
+import net.will_co21.format.json.JsonFormatErrorException;
 import net.will_co21.format.json.JsonObject;
 import net.will_co21.format.json.JsonParser;
 
@@ -31,15 +40,18 @@ public class HttpsGoogleAPIRequester implements IGoogleAPIRequester {
 	protected final ISettings settings;
 	protected final ISwingLogPrinter logPrinter;
 	protected final ILogger logger;
+	protected final Consumer<String> dialogOpener;
 	protected String keyword = "";
 	protected int currentPage;
 
-	public HttpsGoogleAPIRequester(ISettings settings, ISwingLogPrinter logPrinter, ILogger logger) throws UnsupportedEncodingException, FileNotFoundException, IOException
+	public HttpsGoogleAPIRequester(ISettings settings, ISwingLogPrinter logPrinter, ILogger logger,
+			Consumer<String> dialogOpener) throws UnsupportedEncodingException, FileNotFoundException, IOException
 	{
 		this.cancelled = false;
 		this.settings = settings;
 		this.logPrinter = logPrinter;
 		this.logger = logger;
+		this.dialogOpener = dialogOpener;
 		this.currentPage = 1;
 		this.requestExecutor = Executors.newSingleThreadExecutor();
 	}
@@ -62,10 +74,17 @@ public class HttpsGoogleAPIRequester implements IGoogleAPIRequester {
 					int status = con.getResponseCode();
 					if(status >= 200 && status < 300) this.onSuccess(downloader, con);
 					else this.onError(url, con, logPrinter, logger);
+				} catch (GoogleAPIResponseFormatErrorException e) {
+					logPrinter.print(e.getMessage());
+					logger.write(e.getMessage());
+					dialogOpener.accept(e.getMessage());
 				} catch (SocketTimeoutException e) {
 					this.logger.write(String.format("通信タイムアウト発生: url = %s", url));
 					this.logPrinter.print(String.format("通信タイムアウト発生: url = %s", url));
+				} catch (GoogleCustomSearchAPIDailyLimitExceededException e) {
+					dialogOpener.accept(e.getMessage());
 				} catch (Exception e) {
+					this.logPrinter.print(String.format("通信時にエラー発生"));
 					this.logger.write(e);
 				} catch (Error e) {
 					this.logger.write(String.format("致命的な例外: %s, message = %s", e.getClass().getName(), e.getMessage()));
@@ -128,9 +147,11 @@ public class HttpsGoogleAPIRequester implements IGoogleAPIRequester {
 		JsonObject jobj = null;
 		try {
 			jobj = (JsonObject)JsonParser.parse(json);
-		} catch (Exception e) {
-			System.out.println(json);
+		} catch (JsonFormatErrorException e) {
+			throw new GoogleAPIResponseFormatErrorException("google custom search apiから取得したjsonの形式が不正です。");
 		}
+
+		if(this.cancelled) return;
 
 		List<String> urls = ((JsonArray)jobj.get("items")).map((item) -> {
 			return item.value.get("link").getString();
@@ -145,7 +166,29 @@ public class HttpsGoogleAPIRequester implements IGoogleAPIRequester {
 
 	protected void onError(String url, HttpURLConnection con, ISwingLogPrinter logPrinter, ILogger logger)
 	{
+
 		try {
+			if(con.getResponseCode() == 403)
+			{
+				ZonedDateTime zdt = ZonedDateTime.now(ZoneId.of("Asia/Tokyo"));
+
+				String day = null;
+
+				if(zdt.getHour() >= 17)
+				{
+					day = "明日";
+				}
+				else
+				{
+					day = "今日";
+				}
+
+				throw new GoogleCustomSearchAPIDailyLimitExceededException(
+						String.format("google custom search apiの利用制限に達しました。 apiは%sの17時00分まで利用できません。",
+						day));
+
+			}
+
 			logPrinter.print(String.format("通信時にエラー発生: url = %s, HTTP Status = %d",
 											url, con.getResponseCode()));
 		} catch (IOException e) {

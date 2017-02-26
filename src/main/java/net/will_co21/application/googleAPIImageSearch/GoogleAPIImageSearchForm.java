@@ -48,6 +48,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
@@ -257,7 +259,12 @@ public class GoogleAPIImageSearchForm extends JFrame {
 				});
 		}, logPrinter, logger, environment, settings);
 
-		apiRequester = new HttpsGoogleAPIRequester(settings, logPrinter, logger);
+		apiRequester = new HttpsGoogleAPIRequester(settings, logPrinter, logger,
+				(str) -> {
+					EventQueue.invokeLater(() -> {
+						JOptionPane.showMessageDialog(this, str);
+					});
+				});
 
 		shutDownInvoker.setImplements(() -> {
 			if(apiRequester != null) apiRequester.shutdown();
@@ -303,8 +310,8 @@ public class GoogleAPIImageSearchForm extends JFrame {
 					searchButton.setText("次を検索");
 					originalSearchButtonText = searchButton.getText();
 				});
-			} catch (Exception ex) {
-				logger.write(ex);
+			} catch (Exception e) {
+				logger.write(e);
 			}
 		};
 
