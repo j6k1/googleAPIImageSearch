@@ -158,7 +158,7 @@ public class JavaScriptParser implements IContentParser {
 			}
 			else
 			{
-				String url = urlNormalizer.normalizedUrl(sb.toString());
+				String url = urlNormalizer.normalizedUrl(URLNormalizer.decodeHtmlEntity(sb.toString()));
 				if(UrlRegExp.pattern.matcher(url).find()) return new URLToken(startPosition, position, url);
 				else if(position == textChars.length - 1) return new ContentEOF();
 				else return new OtherToken(startPosition, position);

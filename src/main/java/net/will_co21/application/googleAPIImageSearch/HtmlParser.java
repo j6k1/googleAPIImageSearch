@@ -98,10 +98,6 @@ public class HtmlParser implements IContentParser {
 
 		String stringBody = text.substring(stringStart + 1, stringEnd);
 
-		return stringBody.replaceAll("\\\\\"|&quot;", "\"")
-				.replaceAll("\\\\'|&apos;", "'")
-				.replaceAll("&lt;", "<")
-				.replaceAll("&gt;", ">")
-				.replaceAll("&amp;", "&");
+		return URLNormalizer.decodeHtmlEntity(stringBody);
 	}
 }

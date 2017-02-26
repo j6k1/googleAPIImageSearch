@@ -225,7 +225,7 @@ public class URLNormalizer {
 
 			if(startPosition == length)
 			{
-				return decodeHtmlEntity(this.schemaPart + "://" + this.hostPart + this.pathPart + "/");
+				return this.schemaPart + "://" + this.hostPart + this.pathPart + "/";
 			}
 			int queryStartPosition = url.indexOf('?');
 			int fragmentStartPosition = url.indexOf('#');
@@ -236,16 +236,16 @@ public class URLNormalizer {
 
 			if(pathEndPosition == length)
 			{
-				return decodeHtmlEntity(this.schemaPart + "://" + this.hostPart +
+				return this.schemaPart + "://" + this.hostPart +
 						normalizedPath(getPath(url)) +
-						(url.charAt(pathEndPosition - 1) == '/' ? "/" : ""));
+						(url.charAt(pathEndPosition - 1) == '/' ? "/" : "");
 			}
 			else
 			{
-				return decodeHtmlEntity(this.schemaPart + "://" + this.hostPart +
+				return this.schemaPart + "://" + this.hostPart +
 						normalizedPath(getPath(url)) +
 						(url.charAt(pathEndPosition - 1) == '/' ? "/" : "") +
-						url.substring(pathEndPosition, length));
+						url.substring(pathEndPosition, length);
 			}
 		}
 		else
@@ -259,17 +259,17 @@ public class URLNormalizer {
 
 			if(pathEndPosition == length)
 			{
-				return decodeHtmlEntity(this.schemaPart + "://" + this.hostPart + this.pathPart +
+				return this.schemaPart + "://" + this.hostPart + this.pathPart +
 						normalizedPath(getPath(url)) +
-						(pathEndPosition > 0 && url.charAt(pathEndPosition - 1) == '/' ? "/" : ""));
+						(pathEndPosition > 0 && url.charAt(pathEndPosition - 1) == '/' ? "/" : "");
 			}
 			else
 			{
-				return decodeHtmlEntity(this.schemaPart + "://" + this.hostPart +
+				return this.schemaPart + "://" + this.hostPart +
 						this.pathPart +
 						normalizedPath(getPath(url)) +
 						(pathEndPosition > 0 && url.charAt(pathEndPosition - 1) == '/' ? "/" : "") +
-						url.substring(pathEndPosition, length));
+						url.substring(pathEndPosition, length);
 			}
 		}
 	}
