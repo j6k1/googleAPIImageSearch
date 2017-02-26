@@ -120,7 +120,7 @@ public class HttpDownloadTask implements IDownloadTask {
 
 		});
 
-		setOnReadyImagesListener((File originaImagelPath, File resizedImagePath, File thumbnailPath, int w, int h) -> {
+		setOnReadyImagesListener((String url, File originaImagelPath, File resizedImagePath, File thumbnailPath, int w, int h) -> {
 
 		});
 	}
@@ -195,7 +195,7 @@ public class HttpDownloadTask implements IDownloadTask {
 
 						Optional<Pair<Integer, Integer>> resizedImageSize = ImageSizeCalculator.calcImageSize(resizedImagePath, contentType, logger, new CancelStateReader(this));
 
-						resizedImageSize.ifPresent(pair -> imageReader.readImages(rawImagePath, resizedImagePath, thumbnailImagePath, pair.fst, pair.snd));
+						resizedImageSize.ifPresent(pair -> imageReader.readImages(url, rawImagePath, resizedImagePath, thumbnailImagePath, pair.fst, pair.snd));
 
 						return;
 					}
@@ -271,8 +271,8 @@ public class HttpDownloadTask implements IDownloadTask {
 
 	protected void setUpOnReadyImagesListener()
 	{
-		setOnReadyImagesListener((File originaImagelPath, File resizedImagePath, File thumbnailPath, int w, int h) -> {
-			imageReader.readImages(originaImagelPath, resizedImagePath, thumbnailPath, w, h);
+		setOnReadyImagesListener((String url, File originaImagelPath, File resizedImagePath, File thumbnailPath, int w, int h) -> {
+			imageReader.readImages(url, originaImagelPath, resizedImagePath, thumbnailPath, w, h);
 		});
 	}
 
@@ -349,7 +349,7 @@ public class HttpDownloadTask implements IDownloadTask {
 			return;
 		}
 
-		resizedImageSize.ifPresent(pair -> rawImagePath.ifPresent((path) -> imageReader.readImages(path, resizedImagePath, thumbnailImagePath, pair.fst, pair.snd)));
+		resizedImageSize.ifPresent(pair -> rawImagePath.ifPresent((path) -> imageReader.readImages(url, path, resizedImagePath, thumbnailImagePath, pair.fst, pair.snd)));
 	}
 
 	protected void onContentSuccess(IContentScanner scanner, String url,

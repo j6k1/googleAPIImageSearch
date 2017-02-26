@@ -210,11 +210,12 @@ public class GoogleAPIImageSearchForm extends JFrame {
 		}, () -> {
 			onSearchRequestCancelled.run();
 		},
-			(File originalImagelPath, File resizedImagePath, File thumbnailPath, int w, int h) -> {
+			(String url, File originalImagelPath, File resizedImagePath, File thumbnailPath, int w, int h) -> {
 				EventQueue.invokeLater(() -> {
 					JLabel img = new JLabel(new ImageIcon(thumbnailPath.getAbsolutePath()));
 					img.setBackground(Color.BLACK);
 					img.setPreferredSize(new Dimension(ThumbnailSize.width, ThumbnailSize.height));
+					img.setToolTipText(url);
 					GridBagConstraints gbc = new GridBagConstraints();
 					gbc.ipadx = 5;
 					gbc.ipady = 5;
@@ -251,7 +252,7 @@ public class GoogleAPIImageSearchForm extends JFrame {
 
 						@Override
 						public void mouseClicked(MouseEvent e) {
-							ImageWindow imageWindow = new ImageWindow(originalImagelPath.getName());
+							ImageWindow imageWindow = new ImageWindow(url);
 							imageWindow.displayImage(resizedImagePath, w, h);
 						}
 					});
