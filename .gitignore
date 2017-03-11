@@ -45,3 +45,4 @@ apikeys.json
 
 # log
 application.log
+debug.log

@@ -2,6 +2,7 @@ package net.will_co21.application.googleAPIImageSearch;
 
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -62,12 +63,12 @@ public class URLNormalizer {
 			}
 			else
 			{
-				this.pathPart = normalizedPath(baseUrl.substring(pathStartPosition + 1, pathEndPosition));
+				this.pathPart = normalizedPath(baseUrl.substring(pathStartPosition + 1, pathEndPosition)).orElse("/");
 			}
 		}
 	}
 
-	protected String normalizedPath(String path)
+	protected Optional<String> normalizedPath(String path)
 	{
 		LinkedList<String> pathStack = new LinkedList<String>();
 
@@ -77,34 +78,35 @@ public class URLNormalizer {
 		{
 			if(part.equals(".."))
 			{
-				if(pathStack.size() == 0) return "/";
+				if(pathStack.size() == 0) return Optional.empty();
 				else pathStack.pollLast();
 			}
-			else if(part != "" && part != ".")
+			else if(!part.equals("") && !part.equals("."))
 			{
 				pathStack.offerLast(part);
 			}
 		}
 
-		return "/" + String.join("/", pathStack.toArray(new String[0]));
+		return Optional.of("/" + String.join("/", pathStack.toArray(new String[0])));
 	}
 
 	protected String getPath(String url)
 	{
 		int length = url.length();
 
-		if(url.startsWith("http://") || url.startsWith("https://"))
+		if(url.startsWith("http://") || url.startsWith("https://") ||
+				url.startsWith("://") || url.startsWith("//"))
 		{
-			int beforeHostNamePosition = url.indexOf("://");
+			int beforeHostNamePosition = url.indexOf("//");
 
-			if(beforeHostNamePosition + 3 == length)
+			if(beforeHostNamePosition + 2 == length)
 			{
 				return "";
 			}
 
-			int pathStartPosition = url.indexOf('/', beforeHostNamePosition + 3);
-			int queryStartPosition = url.indexOf('?', beforeHostNamePosition + 3);
-			int fragmentStartPosition = url.indexOf('#', beforeHostNamePosition + 3);
+			int pathStartPosition = url.indexOf('/', beforeHostNamePosition + 2);
+			int queryStartPosition = url.indexOf('?', beforeHostNamePosition + 2);
+			int fragmentStartPosition = url.indexOf('#', beforeHostNamePosition + 2);
 			int pathEndPosition = Math.min(
 					(queryStartPosition == -1 ? length : queryStartPosition),
 					(fragmentStartPosition == -1 ? length : fragmentStartPosition)
@@ -169,17 +171,19 @@ public class URLNormalizer {
 			if(pathStartPosition == -1 || pathStartPosition > pathEndPosition) return url;
 			else
 			{
+				String path = normalizedPath(getPath(url)).orElse("/");
+
 				if(pathEndPosition == length)
 				{
 					return url.substring(0, beforeHostNamePosition) + "://" +
 							url.substring(beforeHostNamePosition + 3, pathStartPosition) +
-							normalizedPath(getPath(url)) + (url.charAt(pathEndPosition - 1) == '/' ? "/" : "");
+							path + (!path.equals("/") && url.charAt(pathEndPosition - 1) == '/' ? "/" : "");
 				}
 				else
 				{
 					return url.substring(0, beforeHostNamePosition) + "://" +
 							url.substring(beforeHostNamePosition + 3, pathStartPosition) +
-							normalizedPath(getPath(url)) + (url.charAt(pathEndPosition - 1) == '/' ? "/" : "") +
+							path + (!path.equals("/") && url.charAt(pathEndPosition - 1) == '/' ? "/" : "") +
 							url.substring(pathEndPosition, length);
 				}
 			}
@@ -204,17 +208,19 @@ public class URLNormalizer {
 			}
 			else
 			{
+				String path = normalizedPath(getPath(url)).orElse("/");
+
 				if(pathEndPosition == length)
 				{
 					return this.schemaPart + "://" +
 							url.substring(beforeHostNamePosition + 2, pathStartPosition) +
-							normalizedPath(getPath(url)) + (url.charAt(pathEndPosition - 1) == '/' ? "/" : "");
+							path + (!path.equals("/") && url.charAt(pathEndPosition - 1) == '/' ? "/" : "");
 				}
 				else
 				{
-					return url.substring(0, beforeHostNamePosition) + "://" +
-							url.substring(beforeHostNamePosition + 3, pathStartPosition) +
-							normalizedPath(getPath(url)) + (url.charAt(pathEndPosition - 1) == '/' ? "/" : "") +
+					return this.schemaPart + "://" +
+							url.substring(beforeHostNamePosition + 2, pathStartPosition) +
+							path + (!path.equals("/") && url.charAt(pathEndPosition - 1) == '/' ? "/" : "") +
 							url.substring(pathEndPosition, length);
 				}
 			}
@@ -225,7 +231,7 @@ public class URLNormalizer {
 
 			if(startPosition == length)
 			{
-				return this.schemaPart + "://" + this.hostPart + this.pathPart + "/";
+				return this.schemaPart + "://" + this.hostPart + this.pathPart;
 			}
 			int queryStartPosition = url.indexOf('?');
 			int fragmentStartPosition = url.indexOf('#');
@@ -234,17 +240,19 @@ public class URLNormalizer {
 				(fragmentStartPosition == -1 ? length : fragmentStartPosition)
 			);
 
+			String path = normalizedPath(getPath(url)).orElse("/");
+
 			if(pathEndPosition == length)
 			{
 				return this.schemaPart + "://" + this.hostPart +
-						normalizedPath(getPath(url)) +
-						(url.charAt(pathEndPosition - 1) == '/' ? "/" : "");
+						path +
+						(!path.equals("/") && url.charAt(pathEndPosition - 1) == '/' ? "/" : "");
 			}
 			else
 			{
 				return this.schemaPart + "://" + this.hostPart +
-						normalizedPath(getPath(url)) +
-						(url.charAt(pathEndPosition - 1) == '/' ? "/" : "") +
+						path +
+						(!path.equals("/") && url.charAt(pathEndPosition - 1) == '/' ? "/" : "") +
 						url.substring(pathEndPosition, length);
 			}
 		}
@@ -257,18 +265,21 @@ public class URLNormalizer {
 				(fragmentStartPosition == -1 ? length : fragmentStartPosition)
 			);
 
+			String path = normalizedPath(getPath(url)).orElse("");
+
 			if(pathEndPosition == length)
 			{
-				return this.schemaPart + "://" + this.hostPart + this.pathPart +
-						normalizedPath(getPath(url)) +
-						(pathEndPosition > 0 && url.charAt(pathEndPosition - 1) == '/' ? "/" : "");
+				return this.schemaPart + "://" + this.hostPart +
+						(this.pathPart.equals("/") ? "" : this.pathPart) +
+						path +
+						(!path.equals("/") && pathEndPosition > 0 && url.charAt(pathEndPosition - 1) == '/' ? "/" : "");
 			}
 			else
 			{
 				return this.schemaPart + "://" + this.hostPart +
-						this.pathPart +
-						normalizedPath(getPath(url)) +
-						(pathEndPosition > 0 && url.charAt(pathEndPosition - 1) == '/' ? "/" : "") +
+						(this.pathPart.equals("/") ? "" : this.pathPart) +
+						path +
+						(!path.equals("/") && pathEndPosition > 0 && url.charAt(pathEndPosition - 1) == '/' ? "/" : "") +
 						url.substring(pathEndPosition, length);
 			}
 		}
