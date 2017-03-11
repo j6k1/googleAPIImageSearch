@@ -310,9 +310,6 @@ public class GoogleAPIImageSearchForm extends JFrame {
 				apiRequester.setKeyword(searchKeyword.getText());
 				lastKeyword = searchKeyword.getText();
 				searchButton.setText("検索");
-			}
-			else
-			{
 				changeKeyword = true;
 			}
 
