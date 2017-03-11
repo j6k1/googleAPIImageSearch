@@ -65,14 +65,14 @@ public class HttpsGoogleAPIRequester implements IGoogleAPIRequester {
 	}
 
 	@Override
-	public void request(IDownloadService downloader) throws Exception {
+	public void request(IDownloadService downloader, boolean changeKeyword) throws Exception {
 		if(!this.imageCache.containsKey(keyword))
 		{
 			this.imageCache.put(keyword,
 									new Pair<Integer, ArrayList<SavedImageInfo>>(
 											this.currentPage, new ArrayList<SavedImageInfo>()));
 		}
-		else
+		else if(changeKeyword)
 		{
 			for(SavedImageInfo info: this.imageCache.get(keyword).snd)
 			{

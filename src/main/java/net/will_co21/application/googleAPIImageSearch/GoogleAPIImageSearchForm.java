@@ -297,6 +297,8 @@ public class GoogleAPIImageSearchForm extends JFrame {
 		});
 
 		Runnable searchRunner = () -> {
+			boolean changeKeyword = false;
+
 			if(searchKeyword.getText().equals("")) return;
 			else if(!searchKeyword.getText().equals(lastKeyword))
 			{
@@ -309,10 +311,14 @@ public class GoogleAPIImageSearchForm extends JFrame {
 				lastKeyword = searchKeyword.getText();
 				searchButton.setText("検索");
 			}
+			else
+			{
+				changeKeyword = true;
+			}
 
 			try {
 				searchButton.setEnabled(false);
-				apiRequester.request(downloader);
+				apiRequester.request(downloader, changeKeyword);
 				EventQueue.invokeLater(()-> {
 					searchButton.setText("次を検索");
 					originalSearchButtonText = searchButton.getText();

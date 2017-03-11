@@ -27,7 +27,7 @@ public class MockGoogleAPIRequester implements IGoogleAPIRequester {
 	}
 
 	@Override
-	public void request(IDownloadService downloader) throws Exception {
+	public void request(IDownloadService downloader, boolean changeKeyword) throws Exception {
 		cancelled = false;
 		LinkedList<String> lines = new LinkedList<String>();
 
