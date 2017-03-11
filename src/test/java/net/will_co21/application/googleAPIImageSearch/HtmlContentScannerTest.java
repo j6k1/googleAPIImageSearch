@@ -63,6 +63,7 @@ public class HtmlContentScannerTest {
 			add("https://github.com/j6k1/");
 			add("http://will-co21.net/counter/access_counter.php");
 
+			add("http://will-co21.net/aaa&bbb");
 			add("http://will-co21.net/software.html");
 
 			add("http://will-co21.net/games.html");
@@ -385,6 +386,7 @@ public class HtmlContentScannerTest {
 			add("https://github.com/j6k1/");
 			add("http://will-co21.net/counter/access_counter.php");
 
+			add("http://will-co21.net/aaa&bbb");
 			add("http://will-co21.net/software.html");
 
 			add("http://will-co21.net/games.html");
@@ -707,6 +709,7 @@ public class HtmlContentScannerTest {
 			add("https://github.com/j6k1/");
 			add("http://will-co21.net/counter/access_counter.php");
 
+			add("http://will-co21.net/aaa&bbb");
 			add("http://will-co21.net/software.html");
 
 			add("http://will-co21.net/games.html");
@@ -1029,6 +1032,7 @@ public class HtmlContentScannerTest {
 			add("https://github.com/j6k1/");
 			add("http://will-co21.net/counter/access_counter.php");
 
+			add("http://will-co21.net/aaa&bbb");
 			add("http://will-co21.net/software.html");
 
 			add("http://will-co21.net/games.html");
@@ -1351,6 +1355,7 @@ public class HtmlContentScannerTest {
 			add("https://github.com/j6k1/");
 			add("http://will-co21.net/counter/access_counter.php");
 
+			add("http://will-co21.net/aaa&bbb");
 			add("http://will-co21.net/software.html");
 
 			add("http://will-co21.net/games.html");
@@ -1673,6 +1678,7 @@ public class HtmlContentScannerTest {
 			add("https://github.com/j6k1/");
 			add("http://will-co21.net/counter/access_counter.php");
 
+			add("http://will-co21.net/aaa&bbb");
 			add("http://will-co21.net/software.html");
 
 			add("http://will-co21.net/games.html");
