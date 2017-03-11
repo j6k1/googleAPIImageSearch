@@ -79,6 +79,7 @@ public class HttpDownloadTask implements IDownloadTask {
 	protected int depth;
 	protected String url;
 	protected IImageReader imageReader;
+	protected IOnImageSaveCompleted onSaveImageCompleted;
 	protected ISwingLogPrinter logPrinter;
 	protected ILogger logger;
 	protected IEnvironment environment;
@@ -87,13 +88,15 @@ public class HttpDownloadTask implements IDownloadTask {
 	protected Consumer<HttpDownloadTask> downloadDelegatee;
 
 	public HttpDownloadTask(Consumer<HttpDownloadTask> downloadDelegatee, IDownloadService downloader, int depth,
-			String url, IImageReader imageReader, ISwingLogPrinter logPrinter, ILogger logger, IEnvironment environment, ISettings settings)
+			String url, IImageReader imageReader, IOnImageSaveCompleted onSaveImageCompleted,
+			ISwingLogPrinter logPrinter, ILogger logger, IEnvironment environment, ISettings settings)
 	{
 		this.downloadDelegatee = downloadDelegatee;
 		this.downloader = downloader;
 		this.depth = depth;
 		this.url = url;
 		this.imageReader = imageReader;
+		this.onSaveImageCompleted = onSaveImageCompleted;
 		this.logPrinter = logPrinter;
 		this.logger = logger;
 		this.environment = environment;
@@ -196,6 +199,14 @@ public class HttpDownloadTask implements IDownloadTask {
 						Optional<Pair<Integer, Integer>> resizedImageSize = ImageSizeCalculator.calcImageSize(resizedImagePath, contentType, logger, new CancelStateReader(this));
 
 						resizedImageSize.ifPresent(pair -> imageReader.readImages(url, rawImagePath, resizedImagePath, thumbnailImagePath, pair.fst, pair.snd));
+						resizedImageSize.ifPresent(pair -> {
+							onSaveImageCompleted.saveCompleted(
+									url,
+									rawImagePath.getAbsolutePath(),
+									resizedImagePath.getAbsolutePath(),
+									thumbnailImagePath.getAbsolutePath(), pair.fst, pair.snd
+							);
+						});
 
 						return;
 					}
@@ -349,7 +360,15 @@ public class HttpDownloadTask implements IDownloadTask {
 			return;
 		}
 
-		resizedImageSize.ifPresent(pair -> rawImagePath.ifPresent((path) -> imageReader.readImages(url, path, resizedImagePath, thumbnailImagePath, pair.fst, pair.snd)));
+		resizedImageSize.ifPresent(pair -> rawImagePath.ifPresent(path -> imageReader.readImages(url, path, resizedImagePath, thumbnailImagePath, pair.fst, pair.snd)));
+		resizedImageSize.ifPresent(pair -> rawImagePath.ifPresent(path -> {
+			onSaveImageCompleted.saveCompleted(
+					url,
+					path.getAbsolutePath(),
+					resizedImagePath.getAbsolutePath(),
+					thumbnailImagePath.getAbsolutePath(), pair.fst, pair.snd
+			);
+		}));
 	}
 
 	protected void onContentSuccess(IContentScanner scanner, String url,

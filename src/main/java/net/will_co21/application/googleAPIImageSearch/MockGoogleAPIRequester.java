@@ -86,4 +86,10 @@ public class MockGoogleAPIRequester implements IGoogleAPIRequester {
 	{
 
 	}
+
+	@Override
+	public synchronized void addCacheImage(SavedImageInfo info)
+	{
+
+	}
 }

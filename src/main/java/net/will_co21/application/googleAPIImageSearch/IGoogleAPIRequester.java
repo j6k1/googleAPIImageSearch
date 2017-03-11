@@ -8,4 +8,5 @@ public interface IGoogleAPIRequester extends IOnSearchRequestCompleted {
 	public void reset();
 	public void cancel();
 	public void shutdown();
+	public void addCacheImage(SavedImageInfo info);
 }

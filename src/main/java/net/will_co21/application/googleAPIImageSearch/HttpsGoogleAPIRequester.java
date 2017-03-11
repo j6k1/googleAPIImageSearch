@@ -16,6 +16,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -23,6 +25,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import javax.swing.JOptionPane;
 
@@ -41,23 +44,51 @@ public class HttpsGoogleAPIRequester implements IGoogleAPIRequester {
 	protected final ISwingLogPrinter logPrinter;
 	protected final ILogger logger;
 	protected final Consumer<String> dialogOpener;
+	protected final IImageReader imageReader;
 	protected String keyword = "";
 	protected int currentPage;
+	protected HashMap<String, Pair<Integer, ArrayList<SavedImageInfo>>> imageCache;
 
 	public HttpsGoogleAPIRequester(ISettings settings, ISwingLogPrinter logPrinter, ILogger logger,
-			Consumer<String> dialogOpener) throws UnsupportedEncodingException, FileNotFoundException, IOException
+			Consumer<String> dialogOpener, IImageReader imageReader
+			) throws UnsupportedEncodingException, FileNotFoundException, IOException
 	{
 		this.cancelled = false;
 		this.settings = settings;
 		this.logPrinter = logPrinter;
 		this.logger = logger;
 		this.dialogOpener = dialogOpener;
+		this.imageReader = imageReader;
 		this.currentPage = 1;
 		this.requestExecutor = Executors.newSingleThreadExecutor();
+		this.imageCache = new HashMap<String, Pair<Integer, ArrayList<SavedImageInfo>>>();
 	}
 
 	@Override
 	public void request(IDownloadService downloader) throws Exception {
+		if(!this.imageCache.containsKey(keyword))
+		{
+			this.imageCache.put(keyword,
+									new Pair<Integer, ArrayList<SavedImageInfo>>(
+											this.currentPage, new ArrayList<SavedImageInfo>()));
+		}
+		else
+		{
+			for(SavedImageInfo info: this.imageCache.get(keyword).snd)
+			{
+				this.imageReader.readImages(info.url,
+						new File(info.originaImagelPath),
+						new File(info.resizedImagePath),
+						new File(info.thumbnailPath),
+						info.width, info.height);
+			}
+
+			downloader.restoreRequestedUrls(this.imageCache.get(keyword).snd.stream()
+																			.map(item -> item.url)
+																			.collect(Collectors.toList()));
+			this.currentPage = this.imageCache.get(keyword).fst;
+		}
+
 		cancelled = false;
 		String url = this.apiUrl + "?key=" + settings.getAPIKey() +
 				"&cx=" + settings.getEngineId() +
@@ -118,6 +149,9 @@ public class HttpsGoogleAPIRequester implements IGoogleAPIRequester {
 	public void onSearchRequestCompleted()
 	{
 		this.currentPage++;
+		this.imageCache.put(keyword,
+				new Pair<Integer, ArrayList<SavedImageInfo>>(
+						this.currentPage, this.imageCache.get(keyword).snd));
 	}
 
 	@Override
@@ -194,5 +228,11 @@ public class HttpsGoogleAPIRequester implements IGoogleAPIRequester {
 		} catch (IOException e) {
 			logger.write(e);
 		}
+	}
+
+	@Override
+	public synchronized void addCacheImage(SavedImageInfo info)
+	{
+		this.imageCache.get(keyword).snd.add(info);
 	}
 }

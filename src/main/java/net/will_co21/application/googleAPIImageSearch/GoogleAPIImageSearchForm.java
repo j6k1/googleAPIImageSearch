@@ -205,68 +205,72 @@ public class GoogleAPIImageSearchForm extends JFrame {
 			});
 		};
 
-		downloader = new HttpDownloadService(() -> {
-			onAPIRequesterRequestCompleted.run();
-		}, () -> {
-			onSearchRequestCancelled.run();
-		},
-			(String url, File originalImagelPath, File resizedImagePath, File thumbnailPath, int w, int h) -> {
-				EventQueue.invokeLater(() -> {
-					JLabel img = new JLabel(new ImageIcon(thumbnailPath.getAbsolutePath()));
-					img.setBackground(Color.BLACK);
-					img.setPreferredSize(new Dimension(ThumbnailSize.width, ThumbnailSize.height));
-					img.setToolTipText(url);
-					GridBagConstraints gbc = new GridBagConstraints();
-					gbc.ipadx = 5;
-					gbc.ipady = 5;
-					gbc.gridx = imagePanel.getComponentCount() % 5;
-					gbc.gridy = imagePanel.getComponentCount() / 5;
+		IImageReader imageReader = (String url, File originalImagelPath, File resizedImagePath, File thumbnailPath, int w, int h) -> {
+			EventQueue.invokeLater(() -> {
+				JLabel img = new JLabel(new ImageIcon(thumbnailPath.getAbsolutePath()));
+				img.setBackground(Color.BLACK);
+				img.setPreferredSize(new Dimension(ThumbnailSize.width, ThumbnailSize.height));
+				img.setToolTipText(url);
+				GridBagConstraints gbc = new GridBagConstraints();
+				gbc.ipadx = 5;
+				gbc.ipady = 5;
+				gbc.gridx = imagePanel.getComponentCount() % 5;
+				gbc.gridy = imagePanel.getComponentCount() / 5;
 
-					((GridBagLayout)imagePanel.getLayout()).setConstraints(img, gbc);
-					imagePanel.add(img);
-					img.addMouseListener(new MouseListener() {
+				((GridBagLayout)imagePanel.getLayout()).setConstraints(img, gbc);
+				imagePanel.add(img);
+				img.addMouseListener(new MouseListener() {
 
-						@Override
-						public void mouseReleased(MouseEvent e) {
-							// TODO 自動生成されたメソッド・スタブ
+					@Override
+					public void mouseReleased(MouseEvent e) {
+						// TODO 自動生成されたメソッド・スタブ
 
-						}
+					}
 
-						@Override
-						public void mousePressed(MouseEvent e) {
-							// TODO 自動生成されたメソッド・スタブ
+					@Override
+					public void mousePressed(MouseEvent e) {
+						// TODO 自動生成されたメソッド・スタブ
 
-						}
+					}
 
-						@Override
-						public void mouseExited(MouseEvent e) {
-							// TODO 自動生成されたメソッド・スタブ
+					@Override
+					public void mouseExited(MouseEvent e) {
+						// TODO 自動生成されたメソッド・スタブ
 
-						}
+					}
 
-						@Override
-						public void mouseEntered(MouseEvent e) {
-							// TODO 自動生成されたメソッド・スタブ
+					@Override
+					public void mouseEntered(MouseEvent e) {
+						// TODO 自動生成されたメソッド・スタブ
 
-						}
+					}
 
-						@Override
-						public void mouseClicked(MouseEvent e) {
-							ImageWindow imageWindow = new ImageWindow(url);
-							imageWindow.displayImage(resizedImagePath, w, h);
-						}
-					});
-
-					this.revalidate();
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						ImageWindow imageWindow = new ImageWindow(url);
+						imageWindow.displayImage(resizedImagePath, w, h);
+					}
 				});
-		}, logPrinter, logger, environment, settings);
+
+				this.revalidate();
+			});
+		};
 
 		apiRequester = new HttpsGoogleAPIRequester(settings, logPrinter, logger,
 				(str) -> {
 					EventQueue.invokeLater(() -> {
 						JOptionPane.showMessageDialog(this, str);
 					});
-				});
+				}, imageReader);
+
+		downloader = new HttpDownloadService(() -> {
+			onAPIRequesterRequestCompleted.run();
+		}, () -> {
+			onSearchRequestCancelled.run();
+		}, imageReader
+		, (String url, String originalImagelPath, String resizedImagePath, String thumbnailPath, int w, int h) -> {
+			apiRequester.addCacheImage(new SavedImageInfo(url, originalImagelPath, resizedImagePath, thumbnailPath, w, h));
+		}, logPrinter, logger, environment, settings);
 
 		shutDownInvoker.setImplements(() -> {
 			if(apiRequester != null) apiRequester.shutdown();
@@ -300,6 +304,7 @@ public class GoogleAPIImageSearchForm extends JFrame {
 				this.revalidate();
 				apiRequester.reset();
 				downloader.resetAlreadyDownloads();
+				downloader.resetRequestedUrls();
 				apiRequester.setKeyword(searchKeyword.getText());
 				lastKeyword = searchKeyword.getText();
 				searchButton.setText("検索");
