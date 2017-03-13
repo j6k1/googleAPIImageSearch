@@ -80,6 +80,7 @@ public class HttpDownloadTask implements IDownloadTask {
 	protected String url;
 	protected IImageReader imageReader;
 	protected IOnImageSaveCompleted onSaveImageCompleted;
+	IOnHttpDownloadTaskTerminated onTerminated;
 	protected ISwingLogPrinter logPrinter;
 	protected ILogger logger;
 	protected IEnvironment environment;
@@ -89,6 +90,7 @@ public class HttpDownloadTask implements IDownloadTask {
 
 	public HttpDownloadTask(Consumer<HttpDownloadTask> downloadDelegatee, IDownloadService downloader, int depth,
 			String url, IImageReader imageReader, IOnImageSaveCompleted onSaveImageCompleted,
+			IOnHttpDownloadTaskTerminated onTerminated,
 			ISwingLogPrinter logPrinter, ILogger logger, IEnvironment environment, ISettings settings)
 	{
 		this.downloadDelegatee = downloadDelegatee;
@@ -97,6 +99,7 @@ public class HttpDownloadTask implements IDownloadTask {
 		this.url = url;
 		this.imageReader = imageReader;
 		this.onSaveImageCompleted = onSaveImageCompleted;
+		this.onTerminated = onTerminated;
 		this.logPrinter = logPrinter;
 		this.logger = logger;
 		this.environment = environment;
@@ -141,6 +144,7 @@ public class HttpDownloadTask implements IDownloadTask {
 		} catch (Exception e) {
 			logger.write(e);
 		}
+		onTerminated.terminated(this);
 		downloader.getCounter().countDown();
 		System.gc();
 	}

@@ -12,6 +12,7 @@ import java.util.concurrent.Executors;
 public class HttpDownloadService implements IDownloadService {
 	protected volatile ExecutorService httpDownloadExecutor;
 	protected volatile LinkedList<IDownloadTask> tasks;
+	protected volatile HashSet<IDownloadTask> runningTasks;
 	protected volatile IDownloadCounter counter;
 	IOnSearchRequestCancelled onCancelled;
 	protected IImageReader imageReader;
@@ -32,6 +33,7 @@ public class HttpDownloadService implements IDownloadService {
 	{
 		this.httpDownloadExecutor = Executors.newFixedThreadPool(16);
 		this.tasks = new LinkedList<IDownloadTask>();
+		this.runningTasks = new HashSet<IDownloadTask>();
 		this.counter = new HttpDownloadCounter(onCompleted);
 		this.onCancelled = onCancelled;
 		this.imageReader = imageReader;
@@ -56,6 +58,7 @@ public class HttpDownloadService implements IDownloadService {
 				{
 					this.counter.countUp();
 
+					this.runningTasks.add(task);
 					this.httpDownloadExecutor.submit(task);
 				}
 
@@ -103,6 +106,7 @@ public class HttpDownloadService implements IDownloadService {
 			IDownloadTask task = new HttpDownloadTask(new HttpDownloadTaskConsumer(), this, depth, url,
 															this.imageReader,
 															this.onSaveImageCompleted,
+															runningTask -> runningTasks.remove(runningTask),
 															this.logPrinter, this.logger,
 															this.environment, this.settings);
 
@@ -116,12 +120,12 @@ public class HttpDownloadService implements IDownloadService {
 		synchronaizedExecute(() -> {
 			this.cancelled = true;
 
-			IDownloadTask task;
-
-			while((task = this.tasks.pollLast()) != null)
+			for(IDownloadTask task: this.runningTasks)
 			{
 				task.cansel();
 			}
+
+			this.tasks.clear();
 
 			onCancelled.onSearchRequestCancelled();
 		});
@@ -133,6 +137,7 @@ public class HttpDownloadService implements IDownloadService {
 		working = false;
 		this.httpDownloadExecutor.shutdown();
 		this.taskExecutor.shutdown();
+		this.cansel();
 	}
 
 	@Override
