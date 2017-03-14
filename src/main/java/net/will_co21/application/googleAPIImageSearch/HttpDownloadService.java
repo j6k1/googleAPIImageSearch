@@ -54,12 +54,21 @@ public class HttpDownloadService implements IDownloadService {
 			{
 				IDownloadTask task = null;
 
-				while(working && this.counter.getCount() < 16 && (task = this.tasks.pollFirst()) != null)
+				while(working && !this.cancelled && this.counter.getCount() < 16)
 				{
-					this.counter.countUp();
+					synchronized(this.tasks) {
+						if((task = this.tasks.pollFirst()) == null) break;
+					}
 
-					this.runningTasks.add(task);
-					this.httpDownloadExecutor.submit(task);
+					synchronized(this.runningTasks) {
+						if(!this.cancelled)
+						{
+							this.counter.countUp();
+
+							this.runningTasks.add(task);
+							this.httpDownloadExecutor.submit(task);
+						}
+					}
 				}
 
 				try {
@@ -82,11 +91,6 @@ public class HttpDownloadService implements IDownloadService {
 		return this.cancelled;
 	}
 
-	public synchronized void synchronaizedExecute(Runnable r)
-	{
-		r.run();
-	}
-
 	@Override
 	public void download(String url, int depth, boolean enforce)
 	{
@@ -95,40 +99,47 @@ public class HttpDownloadService implements IDownloadService {
 	}
 
 	@Override
-	public void download(String url, int depth) {
+	public synchronized void download(String url, int depth)
+	{
 		if(this.requestedUrls.contains(url)) return;
 
 		this.requestedUrls.add(url);
 
-		synchronaizedExecute(() -> {
-			if(this.cancelled) return;
+		if(this.cancelled) return;
 
-			IDownloadTask task = new HttpDownloadTask(new HttpDownloadTaskConsumer(), this, depth, url,
-															this.imageReader,
-															this.onSaveImageCompleted,
-															runningTask -> runningTasks.remove(runningTask),
-															this.logPrinter, this.logger,
-															this.environment, this.settings);
+		IDownloadTask task = new HttpDownloadTask(new HttpDownloadTaskConsumer(), this, depth, url,
+														this.imageReader,
+														this.onSaveImageCompleted,
+														runningTask -> {
+															synchronized (this.runningTasks) {
+																runningTasks.remove(runningTask);
+															}
+														},
+														this.logPrinter, this.logger,
+														this.environment, this.settings);
 
+		synchronized(this.tasks) {
 			this.tasks.offerLast(task);
-		});
+		}
 	}
 
 	@Override
 	public void cansel()
 	{
-		synchronaizedExecute(() -> {
-			this.cancelled = true;
+		this.cancelled = true;
 
+		synchronized(this.runningTasks) {
 			for(IDownloadTask task: this.runningTasks)
 			{
 				task.cansel();
 			}
+		}
 
+		synchronized(this.tasks) {
 			this.tasks.clear();
+		}
 
-			onCancelled.onSearchRequestCancelled();
-		});
+		onCancelled.onSearchRequestCancelled();
 	}
 
 	@Override
