@@ -3,9 +3,11 @@ package net.will_co21.application.googleAPIImageSearch;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -14,7 +16,8 @@ public class HttpDownloadService implements IDownloadService {
 	protected volatile LinkedList<IDownloadTask> tasks;
 	protected volatile HashSet<IDownloadTask> runningTasks;
 	protected volatile IDownloadCounter counter;
-	IOnSearchRequestCancelled onCancelled;
+	protected IOnSearchRequestCompleted onCompleted;
+	protected IOnSearchRequestCancelled onCancelled;
 	protected IImageReader imageReader;
 	protected IOnImageSaveCompleted onSaveImageCompleted;
 	protected ISwingLogPrinter logPrinter;
@@ -22,10 +25,11 @@ public class HttpDownloadService implements IDownloadService {
 	protected IEnvironment environment;
 	protected ISettings settings;
 	protected volatile boolean cancelled = false;;
-	protected volatile HashSet<String> alreadyDownloads;
-	protected volatile HashSet<String> requestedUrls;
+	protected volatile Set<String> alreadyDownloads;
+	protected volatile Set<String> requestedUrls;
 	protected volatile boolean working = false;
 	protected final ExecutorService taskExecutor;
+	protected volatile int executedTaskCount;
 
 	public HttpDownloadService(IOnSearchRequestCompleted onCompleted, IOnSearchRequestCancelled onCancelled,
 			IImageReader imageReader, IOnImageSaveCompleted onSaveImageCompleted,
@@ -34,7 +38,11 @@ public class HttpDownloadService implements IDownloadService {
 		this.httpDownloadExecutor = Executors.newFixedThreadPool(16);
 		this.tasks = new LinkedList<IDownloadTask>();
 		this.runningTasks = new HashSet<IDownloadTask>();
-		this.counter = new HttpDownloadCounter(onCompleted);
+		this.onCompleted = () -> {
+			onCompleted.onSearchRequestCompleted();
+			this.executedTaskCount = 0;
+		};
+		this.counter = new HttpDownloadCounter(this.onCompleted);
 		this.onCancelled = onCancelled;
 		this.imageReader = imageReader;
 		this.onSaveImageCompleted = onSaveImageCompleted;
@@ -42,8 +50,8 @@ public class HttpDownloadService implements IDownloadService {
 		this.logger = logger;
 		this.environment = environment;
 		this.settings = settings;
-		this.alreadyDownloads = new HashSet<String>();
-		this.requestedUrls = new HashSet<String>();
+		this.alreadyDownloads = Collections.synchronizedSet(new HashSet<String>());
+		this.requestedUrls = Collections.synchronizedSet(new HashSet<String>());
 
 		taskExecutor = Executors.newSingleThreadExecutor();
 
@@ -57,16 +65,26 @@ public class HttpDownloadService implements IDownloadService {
 				while(working && !this.cancelled && this.counter.getCount() < 16)
 				{
 					synchronized(this.tasks) {
-						if((task = this.tasks.pollFirst()) == null) break;
+						if((task = this.tasks.pollFirst()) == null)
+						{
+							break;
+						}
 					}
+
+					this.counter.countUp();
 
 					synchronized(this.runningTasks) {
 						if(!this.cancelled)
 						{
-							this.counter.countUp();
-
+							this.executedTaskCount++;
 							this.runningTasks.add(task);
+							this.requestedUrls.add(task.getUrl());
+
 							this.httpDownloadExecutor.submit(task);
+						}
+						else
+						{
+							this.counter.countDown();
 						}
 					}
 				}
@@ -92,20 +110,18 @@ public class HttpDownloadService implements IDownloadService {
 	}
 
 	@Override
-	public void download(String url, int depth, boolean enforce)
+	public boolean download(String url, int depth, boolean enforce)
 	{
 		this.cancelled = false;
-		download(url, depth);
+		return download(url, depth);
 	}
 
 	@Override
-	public synchronized void download(String url, int depth)
+	public synchronized boolean download(String url, int depth)
 	{
-		if(this.requestedUrls.contains(url)) return;
+		if(this.requestedUrls.contains(url)) return false;
 
-		this.requestedUrls.add(url);
-
-		if(this.cancelled) return;
+		if(this.cancelled) return false;
 
 		IDownloadTask task = new HttpDownloadTask(new HttpDownloadTaskConsumer(), this, depth, url,
 														this.imageReader,
@@ -121,6 +137,8 @@ public class HttpDownloadService implements IDownloadService {
 		synchronized(this.tasks) {
 			this.tasks.offerLast(task);
 		}
+
+		return true;
 	}
 
 	@Override
@@ -132,8 +150,12 @@ public class HttpDownloadService implements IDownloadService {
 			for(IDownloadTask task: this.runningTasks)
 			{
 				task.cansel();
+				this.requestedUrls.remove(task.getUrl());
 			}
+			if(this.executedTaskCount == 0) this.onCompleted.onSearchRequestCompleted();
 		}
+
+		this.executedTaskCount = 0;
 
 		synchronized(this.tasks) {
 			this.tasks.clear();
@@ -149,6 +171,12 @@ public class HttpDownloadService implements IDownloadService {
 		this.httpDownloadExecutor.shutdown();
 		this.taskExecutor.shutdown();
 		this.cansel();
+	}
+
+	@Override
+	public void onRequestCompleted()
+	{
+		this.onCompleted.onSearchRequestCompleted();
 	}
 
 	@Override

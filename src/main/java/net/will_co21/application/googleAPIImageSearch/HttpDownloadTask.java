@@ -421,4 +421,10 @@ public class HttpDownloadTask implements IDownloadTask {
 		}
 		else return Optional.of(path);
 	}
+
+	@Override
+	public String getUrl()
+	{
+		return this.url;
+	}
 }

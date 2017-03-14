@@ -9,4 +9,5 @@ public interface IDownloadTask extends Runnable, ICanceled {
 							ILogger logger, IEnvironment environment, ISettings settings) throws SocketTimeoutException;
 	public void onError(HttpURLConnection con, String url, ISwingLogPrinter logPrinter, ILogger logger, IEnvironment environment, ISettings settings);
 	public void cansel();
+	public String getUrl();
 }

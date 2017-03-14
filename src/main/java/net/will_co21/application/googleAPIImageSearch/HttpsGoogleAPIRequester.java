@@ -191,11 +191,15 @@ public class HttpsGoogleAPIRequester implements IGoogleAPIRequester {
 			return item.value.get("link").getString();
 		});
 
+		int acceptedCount = 0;
+
 		for(String url: urls)
 		{
 			if(cancelled) break;
-			downloader.download(url, 1, true);
+			if(downloader.download(url, 1, true)) acceptedCount++;
 		}
+
+		if(acceptedCount == 0) downloader.onRequestCompleted();
 	}
 
 	protected void onError(String url, HttpURLConnection con, ISwingLogPrinter logPrinter, ILogger logger)
