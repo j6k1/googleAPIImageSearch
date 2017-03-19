@@ -146,12 +146,15 @@ public class HttpsGoogleAPIRequester implements IGoogleAPIRequester {
 	}
 
 	@Override
-	public void onSearchRequestCompleted()
+	public void onSearchRequestCompleted(boolean cancelled)
 	{
-		this.currentPage++;
-		this.imageCache.put(keyword,
+		if(!cancelled)
+		{
+			this.currentPage++;
+			this.imageCache.put(keyword,
 				new Pair<Integer, ArrayList<SavedImageInfo>>(
 						this.currentPage, this.imageCache.get(keyword).snd));
+		}
 	}
 
 	@Override

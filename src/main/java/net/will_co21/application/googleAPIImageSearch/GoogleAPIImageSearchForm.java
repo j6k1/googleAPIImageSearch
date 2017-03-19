@@ -160,7 +160,6 @@ public class GoogleAPIImageSearchForm extends JFrame {
 		RunnerApplicative onSearchRequestCancelled = new RunnerApplicative();
 
 		shutDownInvoker = new RunnerApplicative();
-		RunnerApplicative onAPIRequesterRequestCompleted = new RunnerApplicative();
 		loggingExecutor = Executors.newSingleThreadExecutor();
 
 		LoggingWorker loggingWorker;
@@ -256,6 +255,9 @@ public class GoogleAPIImageSearchForm extends JFrame {
 			});
 		};
 
+		JButton searchButton = new JButton("検索");
+		JButton canselButton = new JButton("検索を中止");
+
 		apiRequester = new HttpsGoogleAPIRequester(settings, logPrinter, logger,
 				(str) -> {
 					EventQueue.invokeLater(() -> {
@@ -263,8 +265,19 @@ public class GoogleAPIImageSearchForm extends JFrame {
 					});
 				}, imageReader);
 
-		downloader = new HttpDownloadService(() -> {
-			onAPIRequesterRequestCompleted.run();
+		downloader = new HttpDownloadService(cancelled -> {
+			EventQueue.invokeLater(() -> {
+				if(!cancelled)
+				{
+					searchButton.setEnabled(true);
+					canselButton.setEnabled(false);
+				}
+				apiRequester.onSearchRequestCompleted(cancelled);
+				if(isClosed)
+				{
+					shutDownInvoker.run();
+				}
+			});
 		}, () -> {
 			onSearchRequestCancelled.run();
 		}, imageReader
@@ -283,20 +296,23 @@ public class GoogleAPIImageSearchForm extends JFrame {
 			apiRequester.cancel();
 			downloader.cansel();
 		});
-		JButton searchButton = new JButton("検索");
 
-		onAPIRequesterRequestCompleted.setImplements(() -> {
-			EventQueue.invokeLater(() -> {
-				searchButton.setEnabled(true);
-				apiRequester.onSearchRequestCompleted();
-				if(isClosed)
-				{
-					shutDownInvoker.run();
-				}
-			});
+		canselButton.setEnabled(false);
+
+		canselButton.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				EventQueue.invokeLater(() -> {
+					try {
+						apiRequester.cancel();
+						downloader.cansel();
+						canselButton.setEnabled(false);
+					} catch (Exception ex) {
+						logger.write(ex);
+					}
+				});
+			}
 		});
-
-		RunnerApplicative enableCanselButtonRunner = new RunnerApplicative();
 
 		Runnable searchRunner = () -> {
 			boolean changeKeyword = false;
@@ -318,11 +334,9 @@ public class GoogleAPIImageSearchForm extends JFrame {
 			try {
 				searchButton.setEnabled(false);
 				apiRequester.request(downloader, changeKeyword);
-				enableCanselButtonRunner.run();
-				EventQueue.invokeLater(()-> {
-					searchButton.setText("次を検索");
-					originalSearchButtonText = searchButton.getText();
-				});
+				canselButton.setEnabled(true);
+				searchButton.setText("次を検索");
+				originalSearchButtonText = searchButton.getText();
 			} catch (Exception e) {
 				logger.write(e);
 			}
@@ -399,25 +413,6 @@ public class GoogleAPIImageSearchForm extends JFrame {
 				}
 			}
 		});
-		JButton canselButton = new JButton("検索を中止");
-		canselButton.setEnabled(false);
-
-		canselButton.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				EventQueue.invokeLater(() -> {
-					try {
-						apiRequester.cancel();
-						downloader.cansel();
-						canselButton.setEnabled(false);
-					} catch (Exception ex) {
-						logger.write(ex);
-					}
-				});
-			}
-		});
-
-		enableCanselButtonRunner.setImplements(() -> canselButton.setEnabled(true));
 
 		headerPanel.add(canselButton);
 

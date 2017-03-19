@@ -38,9 +38,9 @@ public class HttpDownloadService implements IDownloadService {
 		this.httpDownloadExecutor = Executors.newFixedThreadPool(16);
 		this.tasks = new LinkedList<IDownloadTask>();
 		this.runningTasks = new HashSet<IDownloadTask>();
-		this.onCompleted = () -> {
-			onCompleted.onSearchRequestCompleted();
-			this.executedTaskCount = 0;
+		this.onCompleted = (cancelled) -> {
+			onCompleted.onSearchRequestCompleted(cancelled);
+			if(!cancelled) this.executedTaskCount = 0;
 		};
 		this.counter = new HttpDownloadCounter(this.onCompleted);
 		this.onCancelled = onCancelled;
@@ -71,20 +71,18 @@ public class HttpDownloadService implements IDownloadService {
 						}
 					}
 
-					this.counter.countUp();
-
 					synchronized(this.runningTasks) {
 						if(!this.cancelled)
 						{
+							this.counter.countUp();
+
 							this.executedTaskCount++;
 							this.runningTasks.add(task);
 							this.requestedUrls.add(task.getUrl());
 
+							if(this.getCounter().isCancelled()) this.getCounter().setCancelled(false);
+
 							this.httpDownloadExecutor.submit(task);
-						}
-						else
-						{
-							this.counter.countDown();
 						}
 					}
 				}
@@ -113,6 +111,7 @@ public class HttpDownloadService implements IDownloadService {
 	public boolean download(String url, int depth, boolean enforce)
 	{
 		this.cancelled = false;
+		this.getCounter().setCancelled(false);
 		return download(url, depth);
 	}
 
@@ -152,8 +151,10 @@ public class HttpDownloadService implements IDownloadService {
 				task.cansel();
 				this.requestedUrls.remove(task.getUrl());
 			}
-			if(this.executedTaskCount == 0) this.onCompleted.onSearchRequestCompleted();
+			if(this.executedTaskCount == 0) this.onCompleted.onSearchRequestCompleted(true);
 		}
+
+		this.getCounter().setCancelled(true);
 
 		this.executedTaskCount = 0;
 
@@ -167,6 +168,8 @@ public class HttpDownloadService implements IDownloadService {
 	@Override
 	public void shutdown()
 	{
+		if(!working) return;
+
 		working = false;
 		this.httpDownloadExecutor.shutdown();
 		this.taskExecutor.shutdown();
@@ -176,7 +179,7 @@ public class HttpDownloadService implements IDownloadService {
 	@Override
 	public void onRequestCompleted()
 	{
-		this.onCompleted.onSearchRequestCompleted();
+		this.onCompleted.onSearchRequestCompleted(this.cancelled);
 	}
 
 	@Override

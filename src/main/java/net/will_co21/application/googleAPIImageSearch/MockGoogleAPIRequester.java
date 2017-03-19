@@ -76,7 +76,7 @@ public class MockGoogleAPIRequester implements IGoogleAPIRequester {
 	}
 
 	@Override
-	public void onSearchRequestCompleted()
+	public void onSearchRequestCompleted(boolean cancelled)
 	{
 
 	}
