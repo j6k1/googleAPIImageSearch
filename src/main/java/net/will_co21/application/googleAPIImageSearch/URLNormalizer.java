@@ -231,7 +231,7 @@ public class URLNormalizer {
 
 			if(startPosition == length)
 			{
-				return this.schemaPart + "://" + this.hostPart + this.pathPart;
+				return this.schemaPart + "://" + this.hostPart + "/";
 			}
 			int queryStartPosition = url.indexOf('?');
 			int fragmentStartPosition = url.indexOf('#');
@@ -265,19 +265,28 @@ public class URLNormalizer {
 				(fragmentStartPosition == -1 ? length : fragmentStartPosition)
 			);
 
-			String path = normalizedPath(getPath(url)).orElse("");
+			String path = getPath(url);
+
+			if(this.pathPart.equals("/"))
+			{
+				path = normalizedPath(path).orElse("/");
+			}
+			else
+			{
+				path = normalizedPath(this.pathPart.substring(
+										1, this.pathPart.length()) + "/" + path)
+																		.orElse("/");
+			}
 
 			if(pathEndPosition == length)
 			{
 				return this.schemaPart + "://" + this.hostPart +
-						(this.pathPart.equals("/") ? "" : this.pathPart) +
 						path +
 						(!path.equals("/") && pathEndPosition > 0 && url.charAt(pathEndPosition - 1) == '/' ? "/" : "");
 			}
 			else
 			{
 				return this.schemaPart + "://" + this.hostPart +
-						(this.pathPart.equals("/") ? "" : this.pathPart) +
 						path +
 						(!path.equals("/") && pathEndPosition > 0 && url.charAt(pathEndPosition - 1) == '/' ? "/" : "") +
 						url.substring(pathEndPosition, length);
