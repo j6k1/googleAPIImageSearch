@@ -85,7 +85,6 @@ public class JavaScriptParser implements IContentParser {
 					}
 					else if(isEndToken(text, position))
 					{
-						startPosition = position;
 						position += 1;
 						hasError = true;
 						break;
@@ -133,7 +132,7 @@ public class JavaScriptParser implements IContentParser {
 					position = next + 1;
 					foundNewLine = true;
 				}
-				else if(textChars[next] == ';')
+				else if(textChars[next] == ';' || textChars[next] == ',')
 				{
 					position = next + 1;
 					break;
