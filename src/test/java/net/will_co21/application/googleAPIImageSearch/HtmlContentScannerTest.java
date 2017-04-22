@@ -362,6 +362,30 @@ public class HtmlContentScannerTest {
 			add("http://will-co21.net/hogehoge.jpg");
 			add("http://will-co21.net/gafuga.gif");
 			add("http://will-co21.net/gegege.js");
+
+			// absolute url
+			add("https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js?hogehoge=poepoe&hoehoe=mugamuga#fugafuga");
+
+			//javascript...
+			add("http://will-co21.net/resget.php");
+			add("http://will-co21.net");
+			add("http://will-co21.net/index.html");
+			add("http://will-co21.net/games.html");
+			add("http://will-co21.net/software.html");
+			add("http://will-co21.net/software/noisybbs.html?0");
+			add("http://will-co21.net/software/noisybbs.html?9");
+			add("http://will-co21.net/software/noisybbs.html?0.1119");
+			add("http://will-co21.net/software/noisybbs.html?1.1119");
+
+			// html tags...
+
+			add("http://will-co21.net/games.html");
+			add("http://will-co21.net/links.html");
+			add("http://will-co21.net/games.png");
+			add("http://will-co21.net/links.png");
+
+			// absolute url
+			add("http://bbs.will-co21.net/test/proxy.html?aaaa");
 		}}));
 	}
 
@@ -685,6 +709,30 @@ public class HtmlContentScannerTest {
 			add("http://will-co21.net/hogehoge.jpg");
 			add("http://will-co21.net/gafuga.gif");
 			add("http://will-co21.net/gegege.js");
+
+			// absolute url
+			add("https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js?hogehoge=poepoe&hoehoe=mugamuga#fugafuga");
+
+			//javascript...
+			add("http://will-co21.net/resget.php");
+			add("http://will-co21.net");
+			add("http://will-co21.net/index.html");
+			add("http://will-co21.net/games.html");
+			add("http://will-co21.net/software.html");
+			add("http://will-co21.net/software/noisybbs.html?0");
+			add("http://will-co21.net/software/noisybbs.html?9");
+			add("http://will-co21.net/software/noisybbs.html?0.1119");
+			add("http://will-co21.net/software/noisybbs.html?1.1119");
+
+			// html tags...
+
+			add("http://will-co21.net/games.html");
+			add("http://will-co21.net/links.html");
+			add("http://will-co21.net/games.png");
+			add("http://will-co21.net/links.png");
+
+			// absolute url
+			add("http://bbs.will-co21.net/test/proxy.html?aaaa");
 		}}));
 	}
 
@@ -1008,6 +1056,30 @@ public class HtmlContentScannerTest {
 			add("http://will-co21.net/hogehoge.jpg");
 			add("http://will-co21.net/gafuga.gif");
 			add("http://will-co21.net/gegege.js");
+
+			// absolute url
+			add("https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js?hogehoge=poepoe&hoehoe=mugamuga#fugafuga");
+
+			//javascript...
+			add("http://will-co21.net/resget.php");
+			add("http://will-co21.net");
+			add("http://will-co21.net/index.html");
+			add("http://will-co21.net/games.html");
+			add("http://will-co21.net/software.html");
+			add("http://will-co21.net/software/noisybbs.html?0");
+			add("http://will-co21.net/software/noisybbs.html?9");
+			add("http://will-co21.net/software/noisybbs.html?0.1119");
+			add("http://will-co21.net/software/noisybbs.html?1.1119");
+
+			// html tags...
+
+			add("http://will-co21.net/games.html");
+			add("http://will-co21.net/links.html");
+			add("http://will-co21.net/games.png");
+			add("http://will-co21.net/links.png");
+
+			// absolute url
+			add("http://bbs.will-co21.net/test/proxy.html?aaaa");
 		}}));
 	}
 
@@ -1331,6 +1403,30 @@ public class HtmlContentScannerTest {
 			add("http://will-co21.net/hogehoge.jpg");
 			add("http://will-co21.net/gafuga.gif");
 			add("http://will-co21.net/gegege.js");
+
+			// absolute url
+			add("https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js?hogehoge=poepoe&hoehoe=mugamuga#fugafuga");
+
+			//javascript...
+			add("http://will-co21.net/resget.php");
+			add("http://will-co21.net");
+			add("http://will-co21.net/index.html");
+			add("http://will-co21.net/games.html");
+			add("http://will-co21.net/software.html");
+			add("http://will-co21.net/software/noisybbs.html?0");
+			add("http://will-co21.net/software/noisybbs.html?9");
+			add("http://will-co21.net/software/noisybbs.html?0.1119");
+			add("http://will-co21.net/software/noisybbs.html?1.1119");
+
+			// html tags...
+
+			add("http://will-co21.net/games.html");
+			add("http://will-co21.net/links.html");
+			add("http://will-co21.net/games.png");
+			add("http://will-co21.net/links.png");
+
+			// absolute url
+			add("http://bbs.will-co21.net/test/proxy.html?aaaa");
 		}}));
 	}
 
@@ -1654,6 +1750,30 @@ public class HtmlContentScannerTest {
 			add("http://will-co21.net/hogehoge.jpg");
 			add("http://will-co21.net/gafuga.gif");
 			add("http://will-co21.net/gegege.js");
+
+			// absolute url
+			add("https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js?hogehoge=poepoe&hoehoe=mugamuga#fugafuga");
+
+			//javascript...
+			add("http://will-co21.net/resget.php");
+			add("http://will-co21.net");
+			add("http://will-co21.net/index.html");
+			add("http://will-co21.net/games.html");
+			add("http://will-co21.net/software.html");
+			add("http://will-co21.net/software/noisybbs.html?0");
+			add("http://will-co21.net/software/noisybbs.html?9");
+			add("http://will-co21.net/software/noisybbs.html?0.1119");
+			add("http://will-co21.net/software/noisybbs.html?1.1119");
+
+			// html tags...
+
+			add("http://will-co21.net/games.html");
+			add("http://will-co21.net/links.html");
+			add("http://will-co21.net/games.png");
+			add("http://will-co21.net/links.png");
+
+			// absolute url
+			add("http://bbs.will-co21.net/test/proxy.html?aaaa");
 		}}));
 	}
 
@@ -1977,6 +2097,30 @@ public class HtmlContentScannerTest {
 			add("http://will-co21.net/hogehoge.jpg");
 			add("http://will-co21.net/gafuga.gif");
 			add("http://will-co21.net/gegege.js");
+
+			// absolute url
+			add("https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js?hogehoge=poepoe&hoehoe=mugamuga#fugafuga");
+
+			//javascript...
+			add("http://will-co21.net/resget.php");
+			add("http://will-co21.net");
+			add("http://will-co21.net/index.html");
+			add("http://will-co21.net/games.html");
+			add("http://will-co21.net/software.html");
+			add("http://will-co21.net/software/noisybbs.html?0");
+			add("http://will-co21.net/software/noisybbs.html?9");
+			add("http://will-co21.net/software/noisybbs.html?0.1119");
+			add("http://will-co21.net/software/noisybbs.html?1.1119");
+
+			// html tags...
+
+			add("http://will-co21.net/games.html");
+			add("http://will-co21.net/links.html");
+			add("http://will-co21.net/games.png");
+			add("http://will-co21.net/links.png");
+
+			// absolute url
+			add("http://bbs.will-co21.net/test/proxy.html?aaaa");
 		}}));
 	}
 
@@ -2300,6 +2444,30 @@ public class HtmlContentScannerTest {
 			add("http://will-co21.net/aaaa/hogehoge.jpg");
 			add("http://will-co21.net/aaaa/gafuga.gif");
 			add("http://will-co21.net/aaaa/gegege.js");
+
+			// absolute url
+			add("https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js?hogehoge=poepoe&hoehoe=mugamuga#fugafuga");
+
+			//javascript...
+			add("http://will-co21.net/resget.php");
+			add("http://will-co21.net");
+			add("http://will-co21.net/index.html");
+			add("http://will-co21.net/games.html");
+			add("http://will-co21.net/software.html");
+			add("http://will-co21.net/software/noisybbs.html?0");
+			add("http://will-co21.net/software/noisybbs.html?9");
+			add("http://will-co21.net/software/noisybbs.html?0.1119");
+			add("http://will-co21.net/software/noisybbs.html?1.1119");
+
+			// html tags...
+
+			add("http://will-co21.net/aaaa/games.html");
+			add("http://will-co21.net/aaaa/links.html");
+			add("http://will-co21.net/aaaa/games.png");
+			add("http://will-co21.net/aaaa/links.png");
+
+			// absolute url
+			add("http://bbs.will-co21.net/test/proxy.html?aaaa");
 		}}));
 	}
 
@@ -2623,6 +2791,30 @@ public class HtmlContentScannerTest {
 			add("http://will-co21.net/aaaa/hogehoge.jpg");
 			add("http://will-co21.net/aaaa/gafuga.gif");
 			add("http://will-co21.net/aaaa/gegege.js");
+
+			// absolute url
+			add("https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js?hogehoge=poepoe&hoehoe=mugamuga#fugafuga");
+
+			//javascript...
+			add("http://will-co21.net/resget.php");
+			add("http://will-co21.net");
+			add("http://will-co21.net/index.html");
+			add("http://will-co21.net/games.html");
+			add("http://will-co21.net/software.html");
+			add("http://will-co21.net/software/noisybbs.html?0");
+			add("http://will-co21.net/software/noisybbs.html?9");
+			add("http://will-co21.net/software/noisybbs.html?0.1119");
+			add("http://will-co21.net/software/noisybbs.html?1.1119");
+
+			// html tags...
+
+			add("http://will-co21.net/aaaa/games.html");
+			add("http://will-co21.net/aaaa/links.html");
+			add("http://will-co21.net/aaaa/games.png");
+			add("http://will-co21.net/aaaa/links.png");
+
+			// absolute url
+			add("http://bbs.will-co21.net/test/proxy.html?aaaa");
 		}}));
 	}
 
@@ -2946,6 +3138,30 @@ public class HtmlContentScannerTest {
 			add("http://will-co21.net/aaaa/hogehoge.jpg");
 			add("http://will-co21.net/aaaa/gafuga.gif");
 			add("http://will-co21.net/aaaa/gegege.js");
+
+			// absolute url
+			add("https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js?hogehoge=poepoe&hoehoe=mugamuga#fugafuga");
+
+			//javascript...
+			add("http://will-co21.net/resget.php");
+			add("http://will-co21.net");
+			add("http://will-co21.net/index.html");
+			add("http://will-co21.net/games.html");
+			add("http://will-co21.net/software.html");
+			add("http://will-co21.net/software/noisybbs.html?0");
+			add("http://will-co21.net/software/noisybbs.html?9");
+			add("http://will-co21.net/software/noisybbs.html?0.1119");
+			add("http://will-co21.net/software/noisybbs.html?1.1119");
+
+			// html tags...
+
+			add("http://will-co21.net/aaaa/games.html");
+			add("http://will-co21.net/aaaa/links.html");
+			add("http://will-co21.net/aaaa/games.png");
+			add("http://will-co21.net/aaaa/links.png");
+
+			// absolute url
+			add("http://bbs.will-co21.net/test/proxy.html?aaaa");
 		}}));
 	}
 
@@ -3269,6 +3485,30 @@ public class HtmlContentScannerTest {
 			add("http://will-co21.net/aaaa/hogehoge.jpg");
 			add("http://will-co21.net/aaaa/gafuga.gif");
 			add("http://will-co21.net/aaaa/gegege.js");
+
+			// absolute url
+			add("https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js?hogehoge=poepoe&hoehoe=mugamuga#fugafuga");
+
+			//javascript...
+			add("http://will-co21.net/resget.php");
+			add("http://will-co21.net");
+			add("http://will-co21.net/index.html");
+			add("http://will-co21.net/games.html");
+			add("http://will-co21.net/software.html");
+			add("http://will-co21.net/software/noisybbs.html?0");
+			add("http://will-co21.net/software/noisybbs.html?9");
+			add("http://will-co21.net/software/noisybbs.html?0.1119");
+			add("http://will-co21.net/software/noisybbs.html?1.1119");
+
+			// html tags...
+
+			add("http://will-co21.net/aaaa/games.html");
+			add("http://will-co21.net/aaaa/links.html");
+			add("http://will-co21.net/aaaa/games.png");
+			add("http://will-co21.net/aaaa/links.png");
+
+			// absolute url
+			add("http://bbs.will-co21.net/test/proxy.html?aaaa");
 		}}));
 	}
 
@@ -3592,6 +3832,30 @@ public class HtmlContentScannerTest {
 			add("http://will-co21.net/aaaa/hogehoge.jpg");
 			add("http://will-co21.net/aaaa/gafuga.gif");
 			add("http://will-co21.net/aaaa/gegege.js");
+
+			// absolute url
+			add("https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js?hogehoge=poepoe&hoehoe=mugamuga#fugafuga");
+
+			//javascript...
+			add("http://will-co21.net/resget.php");
+			add("http://will-co21.net");
+			add("http://will-co21.net/index.html");
+			add("http://will-co21.net/games.html");
+			add("http://will-co21.net/software.html");
+			add("http://will-co21.net/software/noisybbs.html?0");
+			add("http://will-co21.net/software/noisybbs.html?9");
+			add("http://will-co21.net/software/noisybbs.html?0.1119");
+			add("http://will-co21.net/software/noisybbs.html?1.1119");
+
+			// html tags...
+
+			add("http://will-co21.net/aaaa/games.html");
+			add("http://will-co21.net/aaaa/links.html");
+			add("http://will-co21.net/aaaa/games.png");
+			add("http://will-co21.net/aaaa/links.png");
+
+			// absolute url
+			add("http://bbs.will-co21.net/test/proxy.html?aaaa");
 		}}));
 	}
 
@@ -3915,6 +4179,30 @@ public class HtmlContentScannerTest {
 			add("http://will-co21.net/aaaa/hogehoge.jpg");
 			add("http://will-co21.net/aaaa/gafuga.gif");
 			add("http://will-co21.net/aaaa/gegege.js");
+
+			// absolute url
+			add("https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js?hogehoge=poepoe&hoehoe=mugamuga#fugafuga");
+
+			//javascript...
+			add("http://will-co21.net/resget.php");
+			add("http://will-co21.net");
+			add("http://will-co21.net/index.html");
+			add("http://will-co21.net/games.html");
+			add("http://will-co21.net/software.html");
+			add("http://will-co21.net/software/noisybbs.html?0");
+			add("http://will-co21.net/software/noisybbs.html?9");
+			add("http://will-co21.net/software/noisybbs.html?0.1119");
+			add("http://will-co21.net/software/noisybbs.html?1.1119");
+
+			// html tags...
+
+			add("http://will-co21.net/aaaa/games.html");
+			add("http://will-co21.net/aaaa/links.html");
+			add("http://will-co21.net/aaaa/games.png");
+			add("http://will-co21.net/aaaa/links.png");
+
+			// absolute url
+			add("http://bbs.will-co21.net/test/proxy.html?aaaa");
 		}}));
 	}
 
@@ -4239,6 +4527,30 @@ public class HtmlContentScannerTest {
 			add("http://will-co21.net/cccc/aaaa/hogehoge.jpg");
 			add("http://will-co21.net/cccc/aaaa/gafuga.gif");
 			add("http://will-co21.net/cccc/aaaa/gegege.js");
+
+			// absolute url
+			add("https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js?hogehoge=poepoe&hoehoe=mugamuga#fugafuga");
+
+			//javascript...
+			add("http://will-co21.net/resget.php");
+			add("http://will-co21.net");
+			add("http://will-co21.net/index.html");
+			add("http://will-co21.net/games.html");
+			add("http://will-co21.net/software.html");
+			add("http://will-co21.net/software/noisybbs.html?0");
+			add("http://will-co21.net/software/noisybbs.html?9");
+			add("http://will-co21.net/software/noisybbs.html?0.1119");
+			add("http://will-co21.net/software/noisybbs.html?1.1119");
+
+			// html tags...
+
+			add("http://will-co21.net/cccc/aaaa/games.html");
+			add("http://will-co21.net/cccc/aaaa/links.html");
+			add("http://will-co21.net/cccc/aaaa/games.png");
+			add("http://will-co21.net/cccc/aaaa/links.png");
+
+			// absolute url
+			add("http://bbs.will-co21.net/test/proxy.html?aaaa");
 		}}));
 	}
 
@@ -4562,6 +4874,30 @@ public class HtmlContentScannerTest {
 			add("http://will-co21.net/cccc/aaaa/hogehoge.jpg");
 			add("http://will-co21.net/cccc/aaaa/gafuga.gif");
 			add("http://will-co21.net/cccc/aaaa/gegege.js");
+
+			// absolute url
+			add("https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js?hogehoge=poepoe&hoehoe=mugamuga#fugafuga");
+
+			//javascript...
+			add("http://will-co21.net/resget.php");
+			add("http://will-co21.net");
+			add("http://will-co21.net/index.html");
+			add("http://will-co21.net/games.html");
+			add("http://will-co21.net/software.html");
+			add("http://will-co21.net/software/noisybbs.html?0");
+			add("http://will-co21.net/software/noisybbs.html?9");
+			add("http://will-co21.net/software/noisybbs.html?0.1119");
+			add("http://will-co21.net/software/noisybbs.html?1.1119");
+
+			// html tags...
+
+			add("http://will-co21.net/cccc/aaaa/games.html");
+			add("http://will-co21.net/cccc/aaaa/links.html");
+			add("http://will-co21.net/cccc/aaaa/games.png");
+			add("http://will-co21.net/cccc/aaaa/links.png");
+
+			// absolute url
+			add("http://bbs.will-co21.net/test/proxy.html?aaaa");
 		}}));
 	}
 
@@ -4885,6 +5221,30 @@ public class HtmlContentScannerTest {
 			add("http://will-co21.net/cccc/aaaa/hogehoge.jpg");
 			add("http://will-co21.net/cccc/aaaa/gafuga.gif");
 			add("http://will-co21.net/cccc/aaaa/gegege.js");
+
+			// absolute url
+			add("https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js?hogehoge=poepoe&hoehoe=mugamuga#fugafuga");
+
+			//javascript...
+			add("http://will-co21.net/resget.php");
+			add("http://will-co21.net");
+			add("http://will-co21.net/index.html");
+			add("http://will-co21.net/games.html");
+			add("http://will-co21.net/software.html");
+			add("http://will-co21.net/software/noisybbs.html?0");
+			add("http://will-co21.net/software/noisybbs.html?9");
+			add("http://will-co21.net/software/noisybbs.html?0.1119");
+			add("http://will-co21.net/software/noisybbs.html?1.1119");
+
+			// html tags...
+
+			add("http://will-co21.net/cccc/aaaa/games.html");
+			add("http://will-co21.net/cccc/aaaa/links.html");
+			add("http://will-co21.net/cccc/aaaa/games.png");
+			add("http://will-co21.net/cccc/aaaa/links.png");
+
+			// absolute url
+			add("http://bbs.will-co21.net/test/proxy.html?aaaa");
 		}}));
 	}
 
@@ -5208,6 +5568,30 @@ public class HtmlContentScannerTest {
 			add("http://will-co21.net/cccc/aaaa/hogehoge.jpg");
 			add("http://will-co21.net/cccc/aaaa/gafuga.gif");
 			add("http://will-co21.net/cccc/aaaa/gegege.js");
+
+			// absolute url
+			add("https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js?hogehoge=poepoe&hoehoe=mugamuga#fugafuga");
+
+			//javascript...
+			add("http://will-co21.net/resget.php");
+			add("http://will-co21.net");
+			add("http://will-co21.net/index.html");
+			add("http://will-co21.net/games.html");
+			add("http://will-co21.net/software.html");
+			add("http://will-co21.net/software/noisybbs.html?0");
+			add("http://will-co21.net/software/noisybbs.html?9");
+			add("http://will-co21.net/software/noisybbs.html?0.1119");
+			add("http://will-co21.net/software/noisybbs.html?1.1119");
+
+			// html tags...
+
+			add("http://will-co21.net/cccc/aaaa/games.html");
+			add("http://will-co21.net/cccc/aaaa/links.html");
+			add("http://will-co21.net/cccc/aaaa/games.png");
+			add("http://will-co21.net/cccc/aaaa/links.png");
+
+			// absolute url
+			add("http://bbs.will-co21.net/test/proxy.html?aaaa");
 		}}));
 	}
 
@@ -5531,6 +5915,30 @@ public class HtmlContentScannerTest {
 			add("http://will-co21.net/cccc/aaaa/hogehoge.jpg");
 			add("http://will-co21.net/cccc/aaaa/gafuga.gif");
 			add("http://will-co21.net/cccc/aaaa/gegege.js");
+
+			// absolute url
+			add("https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js?hogehoge=poepoe&hoehoe=mugamuga#fugafuga");
+
+			//javascript...
+			add("http://will-co21.net/resget.php");
+			add("http://will-co21.net");
+			add("http://will-co21.net/index.html");
+			add("http://will-co21.net/games.html");
+			add("http://will-co21.net/software.html");
+			add("http://will-co21.net/software/noisybbs.html?0");
+			add("http://will-co21.net/software/noisybbs.html?9");
+			add("http://will-co21.net/software/noisybbs.html?0.1119");
+			add("http://will-co21.net/software/noisybbs.html?1.1119");
+
+			// html tags...
+
+			add("http://will-co21.net/cccc/aaaa/games.html");
+			add("http://will-co21.net/cccc/aaaa/links.html");
+			add("http://will-co21.net/cccc/aaaa/games.png");
+			add("http://will-co21.net/cccc/aaaa/links.png");
+
+			// absolute url
+			add("http://bbs.will-co21.net/test/proxy.html?aaaa");
 		}}));
 	}
 
@@ -5854,6 +6262,30 @@ public class HtmlContentScannerTest {
 			add("http://will-co21.net/cccc/aaaa/hogehoge.jpg");
 			add("http://will-co21.net/cccc/aaaa/gafuga.gif");
 			add("http://will-co21.net/cccc/aaaa/gegege.js");
+
+			// absolute url
+			add("https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js?hogehoge=poepoe&hoehoe=mugamuga#fugafuga");
+
+			//javascript...
+			add("http://will-co21.net/resget.php");
+			add("http://will-co21.net");
+			add("http://will-co21.net/index.html");
+			add("http://will-co21.net/games.html");
+			add("http://will-co21.net/software.html");
+			add("http://will-co21.net/software/noisybbs.html?0");
+			add("http://will-co21.net/software/noisybbs.html?9");
+			add("http://will-co21.net/software/noisybbs.html?0.1119");
+			add("http://will-co21.net/software/noisybbs.html?1.1119");
+
+			// html tags...
+
+			add("http://will-co21.net/cccc/aaaa/games.html");
+			add("http://will-co21.net/cccc/aaaa/links.html");
+			add("http://will-co21.net/cccc/aaaa/games.png");
+			add("http://will-co21.net/cccc/aaaa/links.png");
+
+			// absolute url
+			add("http://bbs.will-co21.net/test/proxy.html?aaaa");
 		}}));
 	}
 }
