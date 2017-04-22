@@ -2,6 +2,9 @@
     "apikeys": {
         "path": "apikeys.json"
     },
+    "ignorehosts": {
+    	"path": "ignorehosts.txt"
+    },
     "imageDir": "images",
     "images": {
         "resize": {

@@ -189,4 +189,9 @@ public class IgNoreHostNames {
 
 		return false;
 	}
+
+	public static void add(String host)
+	{
+		hosts.add(host);
+	}
 }

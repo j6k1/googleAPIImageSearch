@@ -30,6 +30,7 @@ public class GoogleAPIImageSearchSettings implements ISettings {
 	protected int resizedImageHeight;
 	protected String imageDataRootDir;
 	protected String apiKeysPath;
+	protected String ignoreHostsPath;
 	protected String apiKey;
 	protected String engineId;
 	protected LoggingMode loggingMode;
@@ -58,6 +59,9 @@ public class GoogleAPIImageSearchSettings implements ISettings {
 					JsonProperty.create("apikeys", new JsonObject(new JsonProperty[] {
 							JsonProperty.create("path", apiKeysPath)
 					})),
+					JsonProperty.create("ignorehosts", new JsonObject(new JsonProperty[] {
+						JsonProperty.create("path", ignoreHostsPath)
+					})),
 					JsonProperty.create("logging", new JsonObject(new JsonProperty[] {
 							JsonProperty.create("mode", (loggingMode == LoggingMode.conole ? "console" : "file")),
 							JsonProperty.create("savepath", logFilePath),
@@ -81,6 +85,7 @@ public class GoogleAPIImageSearchSettings implements ISettings {
 			resizedImageHeight = 800;
 			imageDataRootDir = "images";
 			apiKeysPath = "apikeys.json";
+			ignoreHostsPath = "ignorehosts.txt";
 			loggingMode = LoggingMode.conole;
 			logFilePath = "";
 			isAppendLogging = false;
@@ -120,6 +125,7 @@ public class GoogleAPIImageSearchSettings implements ISettings {
 			resizedImageHeight = jobj.get("images").get("resize").get("height").getInt();
 			imageDataRootDir = jobj.get("imageDir").getString();
 			apiKeysPath = jobj.get("apikeys").get("path").getString();
+			ignoreHostsPath = jobj.get("ignorehosts").get("path").getString();
 			loggingMode = LoggingMode.parse(jobj.getOptional("logging")
 											.orElse(new JsonObject())
 											.getOptional("mode").orElse(new JsonString("console"))
@@ -171,6 +177,21 @@ public class GoogleAPIImageSearchSettings implements ISettings {
 			throw new InvalidSettingException("jsonファイルの形式が不正です。");
 		} catch (NotSupportedMethodException e) {
 			throw new InvalidSettingException("jsonファイルの形式が不正です。");
+		}
+
+		File ignoreHostsPath = new File(this.getIgnoreHostsPath());
+		if(!ignoreHostsPath.exists()) throw new InvalidSettingException("検索除外ホスト一覧を格納したファイルが設定されているパスに存在しません。");
+		else if(ignoreHostsPath.isDirectory()) throw new InvalidSettingException("検索除外ホスト一覧を格納したファイルのパスとして設定されているパスに同名のディレクトリが既に存在します。");
+		else if(!ignoreHostsPath.isFile()) throw new InvalidSettingException("検索除外ホスト一覧を格納したファイルのパスとして設定されているパスにファイルでもディレクトリでもない何かが既に存在します。");
+
+		try(BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(ignoreHostsPath),"UTF-8"))) {
+
+			String line;
+
+			while((line = reader.readLine()) != null)
+			{
+				IgNoreHostNames.add(line);
+			}
 		}
 	}
 
@@ -224,6 +245,12 @@ public class GoogleAPIImageSearchSettings implements ISettings {
 	public String getAPIKeysPath()
 	{
 		return apiKeysPath;
+	}
+
+	@Override
+	public String getIgnoreHostsPath()
+	{
+		return ignoreHostsPath;
 	}
 
 	@Override

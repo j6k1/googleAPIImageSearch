@@ -11,6 +11,7 @@ public interface ISettings {
 	public int getResizedImageHeight();
 	public String getImageDataRootDir();
 	public String getAPIKeysPath();
+	public String getIgnoreHostsPath();
 	public boolean getEnableSafeSearch();
 	public void setEnableSafeSearch(boolean b);
 	public String getAPIKey();
