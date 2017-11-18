@@ -57,7 +57,7 @@ public class HttpDownloadDelegate implements BiFunction<String, ILogger, Optiona
 					redirectCount++;
 					String redirectUrl = connection.getHeaderField("Location");
 
-					if(redirectUrl == null) Optional.of(connection);
+					if(redirectUrl == null) return Optional.of(connection);
 					else url = new URL(redirectUrl);
 				}
 				else
