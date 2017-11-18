@@ -52,7 +52,7 @@ public class HttpDownloadDelegate implements BiFunction<String, ILogger, Optiona
 
 				httpStatus = connection.getResponseCode();
 
-				if(redirectCount < redirectMax && ofContinue[httpStatus])
+				if(redirectCount < redirectMax && httpStatus > 0 && httpStatus < 600 && ofContinue[httpStatus])
 				{
 					redirectCount++;
 					String redirectUrl = connection.getHeaderField("Location");
@@ -64,7 +64,7 @@ public class HttpDownloadDelegate implements BiFunction<String, ILogger, Optiona
 				{
 					return Optional.of(connection);
 				}
-			} while(ofContinue[httpStatus]);
+			} while(httpStatus > 0 && httpStatus < 600 && ofContinue[httpStatus]);
 			return Optional.empty();
 		} catch (Exception e) {
 			logger.write(e);
