@@ -13,7 +13,7 @@ import javax.net.ssl.X509TrustManager;
 
 public class HttpDownloadDelegate implements BiFunction<String, ILogger, Optional<HttpURLConnection>> {
 	protected static final boolean[] ofContinue = new boolean[600];
-
+	protected static final int redirectMax = 3;
 	static {
 		Arrays.fill(ofContinue, false);
 		ofContinue[HttpURLConnection.HTTP_MOVED_PERM] = true;
@@ -25,6 +25,7 @@ public class HttpDownloadDelegate implements BiFunction<String, ILogger, Optiona
 	public Optional<HttpURLConnection> apply(String strUrl, ILogger logger) {
 		try {
 			int httpStatus = 0;
+			int redirectCount = 0;
 
 			URL url = new URL(strUrl);
 
@@ -51,8 +52,9 @@ public class HttpDownloadDelegate implements BiFunction<String, ILogger, Optiona
 
 				httpStatus = connection.getResponseCode();
 
-				if(ofContinue[httpStatus])
+				if(redirectCount < redirectMax && ofContinue[httpStatus])
 				{
+					redirectCount++;
 					String redirectUrl = connection.getHeaderField("Location");
 
 					if(redirectUrl == null) Optional.of(connection);
