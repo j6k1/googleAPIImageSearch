@@ -1,9 +1,6 @@
 package net.will_co21.application.googleAPIImageSearch;
 
 import java.util.Arrays;
-import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class JSStringDecoder {
 	private final static char[] unEscapeMap;

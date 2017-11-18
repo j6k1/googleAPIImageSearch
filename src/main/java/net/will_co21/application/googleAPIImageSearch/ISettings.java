@@ -1,6 +1,5 @@
 package net.will_co21.application.googleAPIImageSearch;
 
-import java.io.File;
 import java.io.IOException;
 
 public interface ISettings {

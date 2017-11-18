@@ -3,8 +3,6 @@ package net.will_co21.application.googleAPIImageSearch;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.management.RuntimeErrorException;
-
 public class HtmlParser implements IContentParser {
 	protected static final Pattern regexPattern = Pattern.compile(
 			"(?:(?:\\<img .*?src|<a .*?href)=(\"(?:\\\"|.)*?\").*?>)|" +

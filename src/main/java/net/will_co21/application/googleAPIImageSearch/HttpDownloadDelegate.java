@@ -1,47 +1,69 @@
 package net.will_co21.application.googleAPIImageSearch;
 
-import java.net.ConnectException;
 import java.net.HttpURLConnection;
-import java.net.SocketTimeoutException;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.security.SecureRandom;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 
 public class HttpDownloadDelegate implements BiFunction<String, ILogger, Optional<HttpURLConnection>> {
+	protected static final boolean[] ofContinue = new boolean[600];
+
+	static {
+		Arrays.fill(ofContinue, false);
+		ofContinue[HttpURLConnection.HTTP_MOVED_PERM] = true;
+		ofContinue[HttpURLConnection.HTTP_MOVED_TEMP] = true;
+		ofContinue[HttpURLConnection.HTTP_SEE_OTHER] = true;
+	}
 
 	@Override
 	public Optional<HttpURLConnection> apply(String strUrl, ILogger logger) {
 		try {
+			int httpStatus = 0;
+
 			URL url = new URL(strUrl);
-			HttpURLConnection connection = null;
 
-			if(url.getProtocol().equals("https"))
-			{
-				SSLContext sslContext = SSLContext.getInstance("SSL");
-				sslContext.init(null, new X509TrustManager[] {
-					new LooseTrustManager()
-				}, new SecureRandom());
-				connection = (HttpURLConnection)url.openConnection();
-				((HttpsURLConnection)connection).setSSLSocketFactory(sslContext.getSocketFactory());
-			}
-			else
-			{
-				connection = (HttpURLConnection)url.openConnection();
-			}
+			do {
+				HttpURLConnection connection = null;
 
-			connection.setConnectTimeout(3000);
-			connection.setRequestMethod("GET");
-			connection.connect();
+				if(url.getProtocol().equals("https"))
+				{
+					SSLContext sslContext = SSLContext.getInstance("SSL");
+					sslContext.init(null, new X509TrustManager[] {
+						new LooseTrustManager()
+					}, new SecureRandom());
+					connection = (HttpURLConnection)url.openConnection();
+					((HttpsURLConnection)connection).setSSLSocketFactory(sslContext.getSocketFactory());
+				}
+				else
+				{
+					connection = (HttpURLConnection)url.openConnection();
+				}
 
-			return Optional.of(connection);
+				connection.setConnectTimeout(3000);
+				connection.setRequestMethod("GET");
+				connection.connect();
+
+				httpStatus = connection.getResponseCode();
+
+				if(ofContinue[httpStatus])
+				{
+					String redirectUrl = connection.getHeaderField("Location");
+
+					if(redirectUrl == null) Optional.of(connection);
+					else url = new URL(redirectUrl);
+				}
+				else
+				{
+					return Optional.of(connection);
+				}
+			} while(ofContinue[httpStatus]);
+			return Optional.empty();
 		} catch (Exception e) {
 			logger.write(e);
 			return Optional.empty();

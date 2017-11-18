@@ -2,6 +2,7 @@ package net.will_co21.application.googleAPIImageSearch;
 
 import java.util.ArrayList;
 
+@SuppressWarnings("serial")
 public class IgNoreHostNames {
 	protected static ArrayList<String> hosts;
 

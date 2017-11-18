@@ -1,6 +1,5 @@
 package net.will_co21.application.googleAPIImageSearch;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
@@ -19,22 +18,12 @@ import java.awt.GridBagConstraints;
 import javax.swing.JTextField;
 import javax.swing.JCheckBox;
 import javax.swing.JButton;
-import java.awt.GridLayout;
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.ColumnSpec;
-import com.jgoodies.forms.layout.FormSpecs;
-import com.jgoodies.forms.layout.RowSpec;
 import java.awt.Rectangle;
-import java.awt.ComponentOrientation;
 import java.awt.GridBagLayout;
-import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.Alignment;
 import javax.swing.ImageIcon;
-import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.JFormattedTextField;
 import javax.swing.JScrollPane;
 
 import java.awt.event.KeyAdapter;
@@ -48,16 +37,15 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.HashSet;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.function.Consumer;
 
 public class GoogleAPIImageSearchForm extends JFrame {
-
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = -2617295185731416329L;
 	private JPanel contentPane;
 	private JTextField searchKeyword;
 	private JTextField logWindow;

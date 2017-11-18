@@ -46,13 +46,13 @@ public class Result<T, E extends Exception> {
 	public boolean equals(Object o)
 	{
 		if(!(o instanceof Result)) return false;
-		else if(this.result.isPresent() && ((Result)o).result.isPresent())
+		else if(this.result.isPresent() && ((Result<?, ?>)o).result.isPresent())
 		{
-			return this.result.get().equals(((Result)o).result.get());
+			return this.result.get().equals(((Result<?, ?>)o).result.get());
 		}
-		else if(((Result)o).error.isPresent())
+		else if(((Result<?, ?>)o).error.isPresent())
 		{
-			return this.error.get().equals(((Result)o).error.get());
+			return this.error.get().equals(((Result<?, ?>)o).error.get());
 		}
 		else
 		{

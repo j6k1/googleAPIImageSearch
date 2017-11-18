@@ -1,8 +1,5 @@
 package net.will_co21.application.googleAPIImageSearch;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;

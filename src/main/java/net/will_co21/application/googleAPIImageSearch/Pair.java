@@ -14,7 +14,7 @@ public class Pair<F,S> {
 	public boolean equals(Object obj)
 	{
 		if(!(obj instanceof Pair)) return false;
-		else return this.fst.equals(((Pair)obj).fst) && this.snd.equals(((Pair)obj).snd);
+		else return this.fst.equals(((Pair<?, ?>)obj).fst) && this.snd.equals(((Pair<?, ?>)obj).snd);
 	}
 
 	@Override

@@ -1,18 +1,10 @@
 package net.will_co21.application.googleAPIImageSearch;
 
-import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
-import java.net.URL;
-import java.net.UnknownHostException;
-import java.security.SecureRandom;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
-
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.X509TrustManager;
 
 public class HttpDownloadTaskConsumer implements Consumer<HttpDownloadTask> {
 	protected final BiFunction<String, ILogger, Optional<HttpURLConnection>> delegate = new HttpDownloadDelegate();

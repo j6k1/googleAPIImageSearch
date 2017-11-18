@@ -1,7 +1,5 @@
 package net.will_co21.application.googleAPIImageSearch;
 
-import java.io.File;
-
 public class SavedImageInfo {
 	public final String url;
 	public final String originaImagelPath;

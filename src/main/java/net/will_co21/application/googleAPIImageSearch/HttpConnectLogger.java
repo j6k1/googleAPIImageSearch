@@ -4,8 +4,6 @@ import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 
-import javax.swing.event.SwingPropertyChangeSupport;
-
 public class HttpConnectLogger implements ILogger {
 	protected final String url;
 	protected final ILogger logger;

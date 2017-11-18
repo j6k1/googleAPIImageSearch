@@ -1,8 +1,6 @@
 package net.will_co21.application.googleAPIImageSearch;
 
 import java.util.LinkedList;
-import java.util.concurrent.ThreadFactory;
-import java.util.function.Consumer;
 
 public class LoggingWorker implements Runnable {
 	protected IClosableWriter writer;

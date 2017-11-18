@@ -2,7 +2,6 @@ package net.will_co21.application.googleAPIImageSearch;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 
 public class HtmlContentScanner implements IContentScanner {
 	protected String contentText;
